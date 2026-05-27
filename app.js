@@ -11,9 +11,13 @@
   const changeBtn    = $("change-settings-btn");
   const nameInput    = $("name-input");
   const levelSelect  = $("level-select");
-  const startBtn     = $("start-btn");
+  const startSpellingBtn    = $("start-spelling-btn");
+  const mathsSublists       = $("maths-sublists");
+  const mathsSublistButtons = $("maths-sublist-buttons");
   const historyBtn   = $("history-btn");
   const wordEmoji    = $("word-emoji");
+  const questionTextEl = $("question-text");
+  const wordControlsEl = $("word-controls");
   const sayWordBtn   = $("say-word-btn");
   const saySentBtn   = $("say-sentence-btn");
   const answerForm   = $("answer-form");
@@ -37,7 +41,9 @@
   const WORDS_PER_SESSION = 10;
   const CHOCOLATE_STREAK = 10;
 
-  const lists = window.WORD_LISTS || {};
+  const lists       = window.WORD_LISTS || {};
+  const mathsLists  = window.MATHS_LISTS || {};
+  const mathsGens   = window.MATHS_GENERATORS || {};
 
   const quizMascot    = $("quiz-mascot");
   const resultsMascot = $("results-mascot");
@@ -174,40 +180,105 @@
     return Math.round((bd - ad) / 86400000);
   }
 
-  // Records today's practice for `name` and returns the resulting streak count.
-  // Idempotent for repeat sessions on the same day.
-  function recordPracticeForToday(name) {
-    if (!name) return 0;
+  // Streak entry shape:
+  //   { lastCounted: "YYYY-MM-DD",   // last day the streak ticked up (both subjects done)
+  //     count: N,
+  //     todayDate: "YYYY-MM-DD",     // the day todayDone applies to
+  //     todayDone: { spelling: true, maths: true } }
+  //
+  // Old shape was { last, count } and assumed any practice ticked the streak.
+  // We migrate read-only so existing kids don't lose their numbers.
+  function readStreakEntry(all, name) {
+    const raw = all[name];
+    if (!raw) return null;
+    // New shape always carries a `todayDate` key (even if null). Anything
+    // without it is the legacy `{ last, count }` shape and needs migrating.
+    if ("todayDate" in raw) return raw;
+    return {
+      lastCounted: raw.last || null,
+      count: raw.count || 0,
+      todayDate: null,
+      todayDone: {},
+    };
+  }
+
+  // Records that `name` practised `subject` today. Returns the live streak count
+  // after this practice. The count only ticks once both spelling AND maths have
+  // been done on the same day.
+  function recordPracticeForToday(name, subject) {
+    if (!name || !subject) return 0;
     const all = loadStreaks();
     const today = todayStr();
-    const entry = all[name] || { last: null, count: 0 };
-    if (entry.last === today) return entry.count;
-    const gap = entry.last ? daysBetween(entry.last, today) : null;
-    entry.count = gap === 1 ? entry.count + 1 : 1;
-    entry.last = today;
+    const entry = readStreakEntry(all, name) || {
+      lastCounted: null,
+      count: 0,
+      todayDate: null,
+      todayDone: {},
+    };
+    if (entry.todayDate !== today) {
+      entry.todayDate = today;
+      entry.todayDone = {};
+    }
+    entry.todayDone[subject] = true;
+    const bothDone = entry.todayDone.spelling && entry.todayDone.maths;
+    if (bothDone && entry.lastCounted !== today) {
+      const gap = entry.lastCounted ? daysBetween(entry.lastCounted, today) : null;
+      entry.count = gap === 1 ? entry.count + 1 : 1;
+      entry.lastCounted = today;
+    }
     all[name] = entry;
     localStorage.setItem(STREAK_KEY, JSON.stringify(all));
     return entry.count;
   }
 
-  // Returns the live streak for display: still counts if last practice was today
-  // or yesterday; resets to 0 once a day is missed.
-  function currentStreakFor(name) {
-    if (!name) return 0;
-    const entry = loadStreaks()[name];
-    if (!entry || !entry.last) return 0;
-    const gap = daysBetween(entry.last, todayStr());
-    return gap <= 1 ? entry.count : 0;
+  // Returns { count, todayDone: { spelling, maths } } for display.
+  // count is 0 once a day is missed (last counted day was 2+ days ago).
+  function getStreakStatus(name) {
+    if (!name) return { count: 0, todayDone: {} };
+    const all = loadStreaks();
+    const entry = readStreakEntry(all, name);
+    if (!entry) return { count: 0, todayDone: {} };
+    const today = todayStr();
+    const gap = entry.lastCounted ? daysBetween(entry.lastCounted, today) : null;
+    const liveCount = (gap === 0 || gap === 1) ? (entry.count || 0) : 0;
+    const todayDone = entry.todayDate === today ? (entry.todayDone || {}) : {};
+    return { count: liveCount, todayDone };
   }
 
-  function renderStreak(count, streakEl, chocolateEl) {
+  function currentStreakFor(name) {
+    return getStreakStatus(name).count;
+  }
+
+  function renderStreakInto(name, streakEl, chocolateEl) {
+    if (!name) {
+      streakEl.classList.add("hidden");
+      chocolateEl.classList.add("hidden");
+      return;
+    }
+    const { count, todayDone } = getStreakStatus(name);
+    const spellingDone = !!todayDone.spelling;
+    const mathsDone    = !!todayDone.maths;
+    const bothDone     = spellingDone && mathsDone;
+
+    const lines = [];
     if (count > 0) {
       const dayWord = count === 1 ? "day" : "days";
-      streakEl.innerHTML = `<div class="streak-line">🔥 ${count} ${dayWord} in a row!</div>`;
-      streakEl.classList.remove("hidden");
+      lines.push(`<div class="streak-line">🔥 ${count} ${dayWord} in a row!</div>`);
+    } else if (spellingDone || mathsDone) {
+      lines.push(`<div class="streak-line">Almost there! Do both today to start a streak.</div>`);
     } else {
-      streakEl.classList.add("hidden");
+      lines.push(`<div class="streak-line">Do spelling and maths today to start a streak!</div>`);
     }
+
+    if (!bothDone) {
+      const s = spellingDone ? "✅" : "⬜";
+      const m = mathsDone    ? "✅" : "⬜";
+      lines.push(`<div class="streak-sub">Today: ${s} Spelling · ${m} Maths</div>`);
+    }
+
+    streakEl.innerHTML = lines.join("");
+    streakEl.classList.remove("hidden");
+
     if (count >= CHOCOLATE_STREAK) {
       chocolateEl.classList.remove("hidden");
     } else {
@@ -216,39 +287,23 @@
   }
 
   function refreshHomeStreak() {
-    const name = nameInput.value.trim();
-    if (!name) {
-      homeStreakEl.classList.add("hidden");
-      homeChocolateEl.classList.add("hidden");
-      return;
-    }
-    const count = currentStreakFor(name);
-    if (count === 0) {
-      homeStreakEl.innerHTML = `<div class="streak-line">Practice today to start a streak!</div>`;
-    } else {
-      const dayWord = count === 1 ? "day" : "days";
-      homeStreakEl.innerHTML = `<div class="streak-line">🔥 ${count} ${dayWord} in a row!</div>`;
-    }
-    homeStreakEl.classList.remove("hidden");
-    if (count >= CHOCOLATE_STREAK) {
-      homeChocolateEl.classList.remove("hidden");
-    } else {
-      homeChocolateEl.classList.add("hidden");
-    }
+    renderStreakInto(nameInput.value.trim(), homeStreakEl, homeChocolateEl);
   }
 
   // ---- setup screen ----
 
   function populateLevels() {
     levelSelect.innerHTML = "";
-    Object.keys(lists).forEach((lvl) => {
+    // Union of years present in either subject so the kid picks a year once
+    const years = new Set([...Object.keys(lists), ...Object.keys(mathsLists)]);
+    years.forEach((lvl) => {
       const opt = document.createElement("option");
       opt.value = lvl;
       opt.textContent = lvl;
       levelSelect.appendChild(opt);
     });
     const savedLevel = localStorage.getItem(LEVEL_KEY);
-    if (savedLevel && lists[savedLevel]) {
+    if (savedLevel && years.has(savedLevel)) {
       levelSelect.value = savedLevel;
     }
   }
@@ -261,11 +316,12 @@
   function applySetupMode() {
     const savedName  = localStorage.getItem(NAME_KEY)  || "";
     const savedLevel = localStorage.getItem(LEVEL_KEY) || "";
-    if (savedName && savedLevel && lists[savedLevel]) {
+    if (savedName && savedLevel && (lists[savedLevel] || mathsLists[savedLevel])) {
       collapseSetup(savedName, savedLevel);
     } else {
       expandSetup();
     }
+    refreshMathsTopics(levelSelect.value);
     refreshHomeStreak();
   }
 
@@ -275,11 +331,9 @@
     setupHeading.classList.add("hidden");
     setupFields.classList.add("hidden");
     greeting.classList.remove("hidden");
-    const count = Math.min(WORDS_PER_SESSION, countWordsInLevel(level));
     greeting.querySelector(".name").textContent = `Hi ${name}!`;
-    greeting.querySelector(".meta").textContent = `${level} · ${count} random words`;
+    greeting.querySelector(".meta").textContent = `${level} · ${WORDS_PER_SESSION} questions per round`;
     changeBtn.classList.remove("hidden");
-    startBtn.textContent = "Start practice";
   }
 
   function expandSetup() {
@@ -287,7 +341,6 @@
     setupFields.classList.remove("hidden");
     greeting.classList.add("hidden");
     changeBtn.classList.add("hidden");
-    startBtn.textContent = "Start";
   }
 
   nameInput.value = localStorage.getItem(NAME_KEY) || "";
@@ -298,19 +351,54 @@
 
   changeBtn.addEventListener("click", expandSetup);
 
-  startBtn.addEventListener("click", () => {
+  levelSelect.addEventListener("change", () => {
+    refreshMathsTopics(levelSelect.value);
+  });
+
+  startSpellingBtn.addEventListener("click", () => {
     const name  = nameInput.value.trim();
     const level = levelSelect.value;
     if (!name) { nameInput.focus(); return; }
     if (!level || !lists[level]) return;
     localStorage.setItem(NAME_KEY, name);
     localStorage.setItem(LEVEL_KEY, level);
-    const words = buildRandomSession(level);
+    const words = buildSpellingSession(level);
     if (!words.length) return;
+    beginAttempt({ name, level, subject: "spelling", subList: null, words });
+  });
+
+  function refreshMathsTopics(level) {
+    const subs = mathsLists[level] || {};
+    mathsSublistButtons.innerHTML = "";
+    Object.keys(subs).forEach((subName) => {
+      const btn = document.createElement("button");
+      btn.textContent = subName;
+      btn.addEventListener("click", () => {
+        const name = nameInput.value.trim();
+        if (!name) { nameInput.focus(); return; }
+        const questions = buildMathsSession(level, subName);
+        if (!questions.length) return;
+        localStorage.setItem(NAME_KEY, name);
+        localStorage.setItem(LEVEL_KEY, level);
+        beginAttempt({
+          name,
+          level,
+          subject: "maths",
+          subList: subName,
+          words: questions,
+        });
+      });
+      mathsSublistButtons.appendChild(btn);
+    });
+  }
+
+  function beginAttempt({ name, level, subject, subList, words }) {
     if (attempt && !attempt.posted) postAttemptToForm(attempt);
     attempt = {
       name,
       level,
+      subject,
+      subList,
       originalTotal: words.length,
       originalCorrect: null,
       retries: 0,
@@ -318,19 +406,45 @@
       lastMissed: [],
       posted: false,
     };
-    startSession(words, level);
-  });
+    startSession(words, level, subject, subList);
+  }
 
-  function buildRandomSession(level) {
+  function buildSpellingSession(level) {
     const subs = lists[level] || {};
     const all = [];
     Object.values(subs).forEach((arr) => arr.forEach((w) => all.push(w)));
     return shuffle(all).slice(0, Math.min(WORDS_PER_SESSION, all.length));
   }
 
+  function buildMathsSession(level, subName) {
+    const sub = (mathsLists[level] || {})[subName];
+    if (!sub) return [];
+    if (Array.isArray(sub)) {
+      return shuffle(sub.slice()).slice(0, Math.min(WORDS_PER_SESSION, sub.length));
+    }
+    if (sub.generator && mathsGens[sub.generator]) {
+      const gen = mathsGens[sub.generator];
+      const args = sub.args || {};
+      const seen = new Set();
+      const out = [];
+      // Cap attempts so a small generator space can't loop forever
+      let tries = 0;
+      while (out.length < WORDS_PER_SESSION && tries < 200) {
+        tries += 1;
+        const q = gen(args);
+        if (!q || !q.question) continue;
+        if (seen.has(q.question)) continue;
+        seen.add(q.question);
+        out.push(q);
+      }
+      return out;
+    }
+    return [];
+  }
+
   // ---- quiz ----
 
-  function startSession(words, level) {
+  function startSession(words, level, subject, subList) {
     session = {
       words,
       i: 0,
@@ -338,13 +452,24 @@
       missed: [],
       name: nameInput.value.trim() || "friend",
       level: level || levelSelect.value,
+      subject: subject || "spelling",
+      subList: subList || null,
     };
     setup.classList.add("hidden");
     results.classList.add("hidden");
     quiz.classList.remove("hidden");
     feedback.textContent = "";
     feedback.className = "";
+    answerForm.classList.remove("hidden");
+    nextBtn.classList.add("hidden");
     answerInput.value = "";
+    if (session.subject === "maths") {
+      answerInput.setAttribute("inputmode", "numeric");
+      answerInput.setAttribute("placeholder", "Type the answer here");
+    } else {
+      answerInput.setAttribute("inputmode", "text");
+      answerInput.setAttribute("placeholder", "Type the word here");
+    }
     setQuizMascot("Standard");
     showCurrent();
     answerInput.focus();
@@ -355,20 +480,35 @@
   }
 
   function showCurrent() {
-    progress.textContent = `Word ${session.i + 1} of ${session.words.length}`;
-    const emoji = current().emoji;
-    if (emoji) {
-      wordEmoji.textContent = emoji;
-      wordEmoji.classList.remove("hidden");
-    } else {
-      wordEmoji.textContent = "";
+    const label = session.subject === "maths" ? "Question" : "Word";
+    progress.textContent = `${label} ${session.i + 1} of ${session.words.length}`;
+    const cur = current();
+    if (session.subject === "maths") {
       wordEmoji.classList.add("hidden");
+      wordControlsEl.classList.add("hidden");
+      questionTextEl.textContent = cur.question;
+      questionTextEl.classList.remove("hidden");
+    } else {
+      questionTextEl.classList.add("hidden");
+      wordControlsEl.classList.remove("hidden");
+      const emoji = cur.emoji;
+      if (emoji) {
+        wordEmoji.textContent = emoji;
+        wordEmoji.classList.remove("hidden");
+      } else {
+        wordEmoji.textContent = "";
+        wordEmoji.classList.add("hidden");
+      }
+      speakWordWithContext(cur);
     }
-    speakWordWithContext(current());
   }
 
-  sayWordBtn.addEventListener("click", () => speakWordWithContext(current()));
-  saySentBtn.addEventListener("click", () => speakSentence(current().sentence));
+  sayWordBtn.addEventListener("click", () => {
+    if (session && session.subject !== "maths") speakWordWithContext(current());
+  });
+  saySentBtn.addEventListener("click", () => {
+    if (session && session.subject !== "maths") speakSentence(current().sentence);
+  });
 
   function advanceQuiz() {
     nextBtn.classList.add("hidden");
@@ -386,12 +526,40 @@
 
   nextBtn.addEventListener("click", advanceQuiz);
 
+  function normaliseMathsAnswer(s) {
+    return String(s)
+      .trim()
+      .toLowerCase()
+      .replace(/\s+/g, "")
+      .replace(/[×x]/g, "*")
+      .replace(/[÷]/g, "/")
+      .replace(/−/g, "-");
+  }
+
+  function checkAnswer(guess, cur) {
+    if (session.subject === "maths") {
+      const g = normaliseMathsAnswer(guess);
+      const t = normaliseMathsAnswer(cur.answer);
+      if (g === t) return true;
+      const gn = parseFloat(g);
+      const tn = parseFloat(t);
+      return !isNaN(gn) && !isNaN(tn) && gn === tn;
+    }
+    return guess.trim().toLowerCase() === String(cur.word).toLowerCase();
+  }
+
+  function correctAnswerText(cur) {
+    return session.subject === "maths"
+      ? `${cur.question} = ${cur.answer}`
+      : `"${cur.word}"`;
+  }
+
   answerForm.addEventListener("submit", (e) => {
     e.preventDefault();
-    const guess = answerInput.value.trim().toLowerCase();
+    const guess = answerInput.value.trim();
     if (!guess) return;
-    const target = current().word.toLowerCase();
-    const wasCorrect = guess === target;
+    const cur = current();
+    const wasCorrect = checkAnswer(guess, cur);
     answerInput.value = "";
     if (wasCorrect) {
       session.correct += 1;
@@ -402,8 +570,8 @@
       session.i += 1;
       setTimeout(advanceQuiz, 900);
     } else {
-      session.missed.push(current());
-      feedback.textContent = `❌ The word was "${current().word}".`;
+      session.missed.push(cur);
+      feedback.textContent = `❌ The answer was ${correctAnswerText(cur)}.`;
       feedback.className = "bad";
       setQuizMascot("Incorrect" + (1 + Math.floor(Math.random() * 3)));
       session.i += 1;
@@ -429,7 +597,7 @@
       } else {
         attempt.endCorrect += session.correct;
       }
-      attempt.lastMissed = session.missed.map((w) => w.word);
+      attempt.lastMissed = session.missed.map((w) => w.word || w.question);
     }
 
     if (attempt && attempt.retries > 0) {
@@ -444,14 +612,16 @@
     missedList.innerHTML = "";
     session.missed.forEach((w) => {
       const li = document.createElement("li");
-      li.textContent = w.word;
+      li.textContent = session.subject === "maths"
+        ? `${w.question} = ${w.answer}`
+        : w.word;
       missedList.appendChild(li);
     });
     retryBtn.disabled = session.missed.length === 0;
     saveSessionToHistory();
 
-    const streak = recordPracticeForToday(session.name);
-    renderStreak(streak, resultsStreakEl, resultsChocolateEl);
+    const streak = recordPracticeForToday(session.name, session.subject);
+    renderStreakInto(session.name, resultsStreakEl, resultsChocolateEl);
 
     const justHitChocolate = streak === CHOCOLATE_STREAK;
     if (pct === 1 || justHitChocolate) {
@@ -489,9 +659,12 @@
     try {
       const total = a.originalTotal;
       const pct = total ? Math.round((a.endCorrect / total) * 100) : 0;
+      const levelLabel = a.subject === "maths"
+        ? `${a.level} · Maths${a.subList ? " · " + a.subList : ""}`
+        : `${a.level} · Spelling`;
       const data = new FormData();
       data.append(FORM_FIELDS.name,   a.name);
-      data.append(FORM_FIELDS.level,  a.level);
+      data.append(FORM_FIELDS.level,  levelLabel);
       data.append(FORM_FIELDS.score,  String(a.endCorrect));
       data.append(FORM_FIELDS.total,  String(total));
       data.append(FORM_FIELDS.pct,    String(pct));
@@ -509,10 +682,11 @@
       ts: Date.now(),
       name: session.name,
       level: session.level,
-      list: "",
+      subject: session.subject,
+      list: session.subList || "",
       total: session.words.length,
       correct: session.correct,
-      missed: session.missed.map((w) => w.word),
+      missed: session.missed.map((w) => w.word || w.question),
     };
     const all = loadHistory();
     all.push(entry);
@@ -533,7 +707,7 @@
     if (!session.missed.length) return;
     stopResultsAnimation();
     if (attempt) attempt.retries += 1;
-    startSession(shuffle(session.missed.slice()), session.level);
+    startSession(shuffle(session.missed.slice()), session.level, session.subject, session.subList);
   });
 
   restartBtn.addEventListener("click", () => {
@@ -614,7 +788,8 @@
     top.className = "entry-top";
 
     const left = document.createElement("div");
-    const metaText = e.list ? `${e.level} › ${e.list}` : e.level;
+    const subj = e.subject ? ` · ${e.subject === "maths" ? "Maths" : "Spelling"}` : "";
+    const metaText = e.list ? `${e.level}${subj} › ${e.list}` : `${e.level}${subj}`;
     left.innerHTML =
       `<div><span class="entry-name"></span> — <span class="entry-meta"></span></div>` +
       `<div class="entry-meta when"></div>`;

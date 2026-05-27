@@ -36,8 +36,14 @@
         <select id="level-select"></select>
       </label>
     </div>
+    <div class="subject-buttons">
+      <button id="start-spelling-btn" class="primary subject-btn full-width">📝 Spelling</button>
+    </div>
+    <div id="maths-sublists" class="sublist-picker">
+      <p class="muted sublist-prompt">🔢 Maths topics</p>
+      <div id="maths-sublist-buttons" class="sublist-buttons"></div>
+    </div>
     <div class="row">
-      <button id="start-btn" class="primary">Start</button>
       <button id="change-settings-btn" class="hidden">Change</button>
       <button id="history-btn">View history</button>
     </div>
@@ -61,7 +67,8 @@
       <img id="quiz-mascot" class="mascot" alt="" />
     </div>
     <div id="word-emoji" class="word-emoji hidden" aria-hidden="true"></div>
-    <div class="word-controls">
+    <div id="question-text" class="question-text hidden"></div>
+    <div id="word-controls" class="word-controls">
       <button id="say-word-btn">🔊 Say the word</button>
       <button id="say-sentence-btn">💬 Use it in a sentence</button>
     </div>
@@ -83,13 +90,14 @@
     <div id="score"></div>
     <ul id="missed-list"></ul>
     <div class="row">
-      <button id="retry-missed-btn">Retry missed words</button>
+      <button id="retry-missed-btn">Retry missed</button>
       <button id="restart-btn" class="primary">New practice</button>
     </div>
   </section>
 </main>
 
 <script src="words.js"></script>
+<script src="maths.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
