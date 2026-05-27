@@ -95,6 +95,40 @@
     launchConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2);
   }
 
+  let resultsAnimTimer = null;
+
+  function stopResultsAnimation() {
+    if (resultsAnimTimer) {
+      clearInterval(resultsAnimTimer);
+      resultsAnimTimer = null;
+    }
+    resultsMascot.classList.remove("animated");
+  }
+
+  function setStaticResultsMascot(level, variant) {
+    stopResultsAnimation();
+    resultsMascot.style.backgroundImage = `url("${mascotSrc(level, variant)}")`;
+    resultsMascot.style.backgroundPosition = "center";
+  }
+
+  function playResultsAnimation(level) {
+    stopResultsAnimation();
+    resultsMascot.classList.add("animated");
+    resultsMascot.style.backgroundImage = `url("Images/${mascotFor(level)}Animation.png")`;
+    const cols = 6, rows = 3, total = cols * rows;
+    let frame = 0;
+    function step() {
+      const col = frame % cols;
+      const row = Math.floor(frame / cols);
+      const x = (col / (cols - 1)) * 100;
+      const y = (row / (rows - 1)) * 100;
+      resultsMascot.style.backgroundPosition = `${x}% ${y}%`;
+      frame = (frame + 1) % total;
+    }
+    step();
+    resultsAnimTimer = setInterval(step, 90);
+  }
+
   function setQuizMascot(variant) {
     if (!session) return;
     quizMascot.src = mascotSrc(session.level, variant);
@@ -268,8 +302,12 @@
     results.classList.remove("hidden");
     const total = session.words.length;
     const pct = total ? session.correct / total : 0;
-    const variant = pct === 1 ? "Happy" : pct >= 0.7 ? "Correct1" : pct >= 0.4 ? "Standard" : "Incorrect3";
-    resultsMascot.src = mascotSrc(session.level, variant);
+    if (pct === 1) {
+      playResultsAnimation(session.level);
+    } else {
+      const variant = pct >= 0.7 ? "Correct1" : pct >= 0.4 ? "Standard" : "Incorrect3";
+      setStaticResultsMascot(session.level, variant);
+    }
     scoreEl.textContent = `${session.name}: ${session.correct} of ${total} correct`;
     missedList.innerHTML = "";
     session.missed.forEach((w) => {
@@ -335,10 +373,12 @@
 
   retryBtn.addEventListener("click", () => {
     if (!session.missed.length) return;
+    stopResultsAnimation();
     startSession(shuffle(session.missed.slice()), session.level);
   });
 
   restartBtn.addEventListener("click", () => {
+    stopResultsAnimation();
     results.classList.add("hidden");
     setup.classList.remove("hidden");
     applySetupMode();
