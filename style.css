@@ -157,7 +157,11 @@ button.primary:hover { filter: brightness(1.1); }
 }
 
 #feedback.good { color: var(--good); }
-#feedback.bad  { color: var(--bad); }
+#feedback.bad  {
+  color: #60a5fa;
+  font-weight: 700;
+  font-size: 1.6rem;
+}
 
 #score {
   font-size: 1.25rem;
@@ -271,4 +275,46 @@ button.primary:hover { filter: brightness(1.1); }
   width: 220px;
   height: auto;
   margin: 0.25rem auto 0.75rem;
+}
+
+/* ---- confetti ---- */
+
+.confetti-burst {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 50;
+  overflow: hidden;
+}
+
+.confetti-piece {
+  position: absolute;
+  width: 9px;
+  height: 14px;
+  border-radius: 2px;
+  will-change: transform, opacity;
+  animation: confetti-fly 1400ms cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+
+@keyframes confetti-fly {
+  0% {
+    transform: translate(-50%, -50%) rotate(0deg);
+    opacity: 1;
+  }
+  30% {
+    transform:
+      translate(calc(-50% + var(--tx) * 0.55), calc(-50% + var(--ty) * 0.55 - 90px))
+      rotate(calc(var(--rot) * 0.35));
+    opacity: 1;
+  }
+  100% {
+    transform:
+      translate(calc(-50% + var(--tx)), calc(-50% + var(--ty) + 260px))
+      rotate(var(--rot));
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .confetti-burst { display: none; }
 }

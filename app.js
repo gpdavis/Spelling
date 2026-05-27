@@ -57,6 +57,44 @@
     return `Images/${mascotFor(level)}_${variant}.png`;
   }
 
+  const CONFETTI_COLORS = ["#fbbf24", "#34d399", "#60a5fa", "#f472b6", "#a78bfa", "#fb7185", "#facc15", "#22d3ee"];
+
+  function launchConfetti(originX, originY) {
+    if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const container = document.createElement("div");
+    container.className = "confetti-burst";
+    const count = 40;
+    for (let i = 0; i < count; i++) {
+      const piece = document.createElement("span");
+      piece.className = "confetti-piece";
+      const angle = Math.random() * Math.PI * 2;
+      const speed = 90 + Math.random() * 200;
+      const tx = Math.cos(angle) * speed;
+      const ty = Math.sin(angle) * speed * 0.6;
+      const rot = (Math.random() * 900 - 450).toFixed(0) + "deg";
+      const color = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)];
+      const duration = 1100 + Math.random() * 700;
+      const delay = Math.random() * 90;
+      piece.style.left = originX + "px";
+      piece.style.top = originY + "px";
+      piece.style.background = color;
+      piece.style.setProperty("--tx", tx.toFixed(1) + "px");
+      piece.style.setProperty("--ty", ty.toFixed(1) + "px");
+      piece.style.setProperty("--rot", rot);
+      piece.style.animationDuration = duration + "ms";
+      piece.style.animationDelay = delay + "ms";
+      container.appendChild(piece);
+    }
+    document.body.appendChild(container);
+    setTimeout(() => container.remove(), 2400);
+  }
+
+  function celebrateFromMascot() {
+    const rect = quizMascot.getBoundingClientRect();
+    if (!rect.width) return;
+    launchConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2);
+  }
+
   function setQuizMascot(variant) {
     if (!session) return;
     quizMascot.src = mascotSrc(session.level, variant);
@@ -200,6 +238,7 @@
       feedback.textContent = "✅ Correct!";
       feedback.className = "good";
       setQuizMascot("Correct" + (1 + Math.floor(Math.random() * 3)));
+      celebrateFromMascot();
     } else {
       session.missed.push(current());
       feedback.textContent = `❌ The word was "${current().word}".`;
