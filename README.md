@@ -133,6 +133,12 @@ Generators live in the same file (`MATHS_GENERATORS`). To add a new pattern, wri
 
 Answer matching for maths normalises whitespace, case, and operator glyphs (`×` ↔ `*`, `÷` ↔ `/`, `−` ↔ `-`), then falls back to a numeric compare. So `12 ` and `12` both pass for an answer of `"12"`.
 
+## Auto-update on new deploys
+
+The app polls its own `index.html` every 5 minutes (and whenever the tab comes back into focus) using a HEAD request with `cache: "no-store"`. It compares the `ETag` / `Last-Modified` header to what it saw at boot; if it changed, the app reloads itself — but only when the user is on the home screen, so a kid is never yanked out of a quiz. If a new version drops mid-session, the reload is held until they return to setup.
+
+This works out of the box on GitHub Pages — no version file to maintain. To disable, remove the `checkForUpdate()` and `setInterval` calls at the bottom of `app.js`.
+
 ## Notes
 
 - Name, level, streaks, and local session history are all persisted per-device via `localStorage`.

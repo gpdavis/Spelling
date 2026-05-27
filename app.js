@@ -324,6 +324,7 @@
     }
     refreshMathsTopics(levelSelect.value);
     refreshHomeStreak();
+    maybeReloadForUpdate();
   }
 
   function collapseSetup(name, level) {
@@ -956,7 +957,57 @@
     console.log("Cleared saved name and level. Refresh to see setup screen.");
   };
 
+  // ---- auto-update on new deploys ----
+  //
+  // GitHub Pages sets ETag/Last-Modified headers on every file. We capture
+  // index.html's header at boot, re-fetch it periodically (cache-busted), and
+  // reload the app when the value changes. To avoid yanking a kid out of a
+  // session, the reload only fires when the setup screen is visible — if an
+  // update is detected mid-quiz, we hold it until they return to setup.
+  const UPDATE_CHECK_URL = "index.html";
+  const UPDATE_CHECK_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+  let knownVersionTag = null;
+  let updatePending = false;
+
+  async function fetchVersionTag() {
+    try {
+      const res = await fetch(UPDATE_CHECK_URL + "?_v=" + Date.now(), {
+        method: "HEAD",
+        cache: "no-store",
+      });
+      if (!res.ok) return null;
+      return res.headers.get("ETag") || res.headers.get("Last-Modified") || null;
+    } catch (e) { return null; }
+  }
+
+  async function checkForUpdate() {
+    const tag = await fetchVersionTag();
+    if (!tag) return;
+    if (knownVersionTag === null) {
+      knownVersionTag = tag;
+      return;
+    }
+    if (tag !== knownVersionTag) {
+      updatePending = true;
+      maybeReloadForUpdate();
+    }
+  }
+
+  function maybeReloadForUpdate() {
+    if (!updatePending) return;
+    if (!setup.classList.contains("hidden")) {
+      location.reload();
+    }
+  }
+
+  // Re-check whenever the tab comes back into focus
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden) checkForUpdate();
+  });
+
   // boot
   populateLevels();
   applySetupMode();
+  checkForUpdate();
+  setInterval(checkForUpdate, UPDATE_CHECK_INTERVAL_MS);
 })();
