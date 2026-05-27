@@ -33,12 +33,18 @@
   const HISTORY_KEY = "spelling.history";
   const NAME_KEY    = "spelling.name";
   const LEVEL_KEY   = "spelling.level";
-  const WORDS_PER_SESSION = 20;
+  const STREAK_KEY  = "spelling.streaks";
+  const WORDS_PER_SESSION = 10;
+  const CHOCOLATE_STREAK = 10;
 
   const lists = window.WORD_LISTS || {};
 
   const quizMascot    = $("quiz-mascot");
   const resultsMascot = $("results-mascot");
+  const homeStreakEl       = $("home-streak");
+  const homeChocolateEl    = $("home-chocolate");
+  const resultsStreakEl    = $("results-streak");
+  const resultsChocolateEl = $("results-chocolate");
 
   const MASCOT_BY_LEVEL = {
     "Kindergarten": "Monty",
@@ -146,6 +152,90 @@
   }
 
   let session = null;
+  // An "attempt" wraps the initial session plus any retry-missed rounds the kid plays
+  // through before either reaching 0 missed or clicking "New practice".
+  let attempt = null;
+
+  // ---- streaks ----
+
+  function loadStreaks() {
+    try { return JSON.parse(localStorage.getItem(STREAK_KEY) || "{}"); }
+    catch (e) { return {}; }
+  }
+
+  function todayStr() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
+
+  function daysBetween(a, b) {
+    const ad = new Date(a + "T00:00:00").getTime();
+    const bd = new Date(b + "T00:00:00").getTime();
+    return Math.round((bd - ad) / 86400000);
+  }
+
+  // Records today's practice for `name` and returns the resulting streak count.
+  // Idempotent for repeat sessions on the same day.
+  function recordPracticeForToday(name) {
+    if (!name) return 0;
+    const all = loadStreaks();
+    const today = todayStr();
+    const entry = all[name] || { last: null, count: 0 };
+    if (entry.last === today) return entry.count;
+    const gap = entry.last ? daysBetween(entry.last, today) : null;
+    entry.count = gap === 1 ? entry.count + 1 : 1;
+    entry.last = today;
+    all[name] = entry;
+    localStorage.setItem(STREAK_KEY, JSON.stringify(all));
+    return entry.count;
+  }
+
+  // Returns the live streak for display: still counts if last practice was today
+  // or yesterday; resets to 0 once a day is missed.
+  function currentStreakFor(name) {
+    if (!name) return 0;
+    const entry = loadStreaks()[name];
+    if (!entry || !entry.last) return 0;
+    const gap = daysBetween(entry.last, todayStr());
+    return gap <= 1 ? entry.count : 0;
+  }
+
+  function renderStreak(count, streakEl, chocolateEl) {
+    if (count > 0) {
+      const dayWord = count === 1 ? "day" : "days";
+      streakEl.innerHTML = `<div class="streak-line">🔥 ${count} ${dayWord} in a row!</div>`;
+      streakEl.classList.remove("hidden");
+    } else {
+      streakEl.classList.add("hidden");
+    }
+    if (count >= CHOCOLATE_STREAK) {
+      chocolateEl.classList.remove("hidden");
+    } else {
+      chocolateEl.classList.add("hidden");
+    }
+  }
+
+  function refreshHomeStreak() {
+    const name = nameInput.value.trim();
+    if (!name) {
+      homeStreakEl.classList.add("hidden");
+      homeChocolateEl.classList.add("hidden");
+      return;
+    }
+    const count = currentStreakFor(name);
+    if (count === 0) {
+      homeStreakEl.innerHTML = `<div class="streak-line">Practice today to start a streak!</div>`;
+    } else {
+      const dayWord = count === 1 ? "day" : "days";
+      homeStreakEl.innerHTML = `<div class="streak-line">🔥 ${count} ${dayWord} in a row!</div>`;
+    }
+    homeStreakEl.classList.remove("hidden");
+    if (count >= CHOCOLATE_STREAK) {
+      homeChocolateEl.classList.remove("hidden");
+    } else {
+      homeChocolateEl.classList.add("hidden");
+    }
+  }
 
   // ---- setup screen ----
 
@@ -176,6 +266,7 @@
     } else {
       expandSetup();
     }
+    refreshHomeStreak();
   }
 
   function collapseSetup(name, level) {
@@ -202,6 +293,7 @@
   nameInput.value = localStorage.getItem(NAME_KEY) || "";
   nameInput.addEventListener("input", () => {
     localStorage.setItem(NAME_KEY, nameInput.value.trim());
+    refreshHomeStreak();
   });
 
   changeBtn.addEventListener("click", expandSetup);
@@ -215,6 +307,17 @@
     localStorage.setItem(LEVEL_KEY, level);
     const words = buildRandomSession(level);
     if (!words.length) return;
+    if (attempt && !attempt.posted) postAttemptToForm(attempt);
+    attempt = {
+      name,
+      level,
+      originalTotal: words.length,
+      originalCorrect: null,
+      retries: 0,
+      endCorrect: 0,
+      lastMissed: [],
+      posted: false,
+    };
     startSession(words, level);
   });
 
@@ -317,13 +420,27 @@
     results.classList.remove("hidden");
     const total = session.words.length;
     const pct = total ? session.correct / total : 0;
-    if (pct === 1) {
-      playResultsAnimation(session.level);
-    } else {
-      const variant = pct >= 0.7 ? "Correct1" : pct >= 0.4 ? "Standard" : "Incorrect3";
-      setStaticResultsMascot(session.level, variant);
+
+    if (attempt) {
+      if (attempt.originalCorrect === null) {
+        attempt.originalTotal = total;
+        attempt.originalCorrect = session.correct;
+        attempt.endCorrect = session.correct;
+      } else {
+        attempt.endCorrect += session.correct;
+      }
+      attempt.lastMissed = session.missed.map((w) => w.word);
     }
-    scoreEl.textContent = `${session.name}: ${session.correct} of ${total} correct`;
+
+    if (attempt && attempt.retries > 0) {
+      const retryWord = attempt.retries === 1 ? "retry" : "retries";
+      scoreEl.textContent =
+        `${session.name}: ${attempt.endCorrect} of ${attempt.originalTotal} correct ` +
+        `(started ${attempt.originalCorrect}/${attempt.originalTotal}, ${attempt.retries} ${retryWord})`;
+    } else {
+      scoreEl.textContent = `${session.name}: ${session.correct} of ${total} correct`;
+    }
+
     missedList.innerHTML = "";
     session.missed.forEach((w) => {
       const li = document.createElement("li");
@@ -332,7 +449,27 @@
     });
     retryBtn.disabled = session.missed.length === 0;
     saveSessionToHistory();
-    postSessionToForm();
+
+    const streak = recordPracticeForToday(session.name);
+    renderStreak(streak, resultsStreakEl, resultsChocolateEl);
+
+    const justHitChocolate = streak === CHOCOLATE_STREAK;
+    if (pct === 1 || justHitChocolate) {
+      playResultsAnimation(session.level);
+    } else {
+      const variant = pct >= 0.7 ? "Correct1" : pct >= 0.4 ? "Standard" : "Incorrect3";
+      setStaticResultsMascot(session.level, variant);
+    }
+    if (justHitChocolate) {
+      setTimeout(() => {
+        const r = resultsMascot.getBoundingClientRect();
+        if (r.width) launchConfetti(r.left + r.width / 2, r.top + r.height / 2);
+      }, 250);
+    }
+
+    if (attempt && session.missed.length === 0) {
+      postAttemptToForm(attempt);
+    }
   }
 
   const FORM_SUBMIT_URL =
@@ -346,17 +483,23 @@
     missed: "entry.1636150148",
   };
 
-  function postSessionToForm() {
+  function postAttemptToForm(a) {
+    if (!a || a.posted) return;
+    a.posted = true;
     try {
-      const total = session.words.length;
-      const pct = total ? Math.round((session.correct / total) * 100) : 0;
+      const total = a.originalTotal;
+      const pct = total ? Math.round((a.endCorrect / total) * 100) : 0;
       const data = new FormData();
-      data.append(FORM_FIELDS.name,   session.name);
-      data.append(FORM_FIELDS.level,  session.level);
-      data.append(FORM_FIELDS.score,  String(session.correct));
+      data.append(FORM_FIELDS.name,   a.name);
+      data.append(FORM_FIELDS.level,  a.level);
+      data.append(FORM_FIELDS.score,  String(a.endCorrect));
       data.append(FORM_FIELDS.total,  String(total));
       data.append(FORM_FIELDS.pct,    String(pct));
-      data.append(FORM_FIELDS.missed, session.missed.map((w) => w.word).join(", "));
+      const remaining = a.lastMissed && a.lastMissed.length
+        ? `still missed: ${a.lastMissed.join(", ")}`
+        : "perfect";
+      const original = a.originalCorrect == null ? "—" : `${a.originalCorrect}/${total}`;
+      data.append(FORM_FIELDS.missed, `Original: ${original}. Retries: ${a.retries}. ${remaining}`);
       fetch(FORM_SUBMIT_URL, { method: "POST", mode: "no-cors", body: data }).catch(() => {});
     } catch (e) { /* best effort */ }
   }
@@ -389,11 +532,14 @@
   retryBtn.addEventListener("click", () => {
     if (!session.missed.length) return;
     stopResultsAnimation();
+    if (attempt) attempt.retries += 1;
     startSession(shuffle(session.missed.slice()), session.level);
   });
 
   restartBtn.addEventListener("click", () => {
     stopResultsAnimation();
+    if (attempt && !attempt.posted) postAttemptToForm(attempt);
+    attempt = null;
     results.classList.add("hidden");
     setup.classList.remove("hidden");
     applySetupMode();

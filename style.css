@@ -291,6 +291,46 @@ button.primary:hover { filter: brightness(1.1); }
   background-size: 600% 300%;
 }
 
+/* ---- streak & chocolate ---- */
+
+.streak {
+  text-align: center;
+  margin: 0 0 1rem;
+  color: #fbbf24;
+}
+
+.streak-line {
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.streak-dots {
+  font-size: 1.05rem;
+  letter-spacing: 0.15em;
+  margin-top: 0.35rem;
+  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.3));
+}
+
+.streak-sub {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin-top: 0.25rem;
+}
+
+.chocolate-prize {
+  text-align: center;
+  margin: 0.75rem 0 1rem;
+  padding: 0.9rem 1rem;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #7c4a1e, #4b2810);
+  color: #fef3c7;
+  font-weight: 700;
+  font-size: 1.05rem;
+  line-height: 1.35;
+  border: 1px solid #a16207;
+  box-shadow: 0 6px 18px rgba(120, 53, 15, 0.45);
+}
+
 /* ---- confetti ---- */
 
 .confetti-burst {
