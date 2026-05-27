@@ -279,6 +279,33 @@
     });
     retryBtn.disabled = session.missed.length === 0;
     saveSessionToHistory();
+    postSessionToForm();
+  }
+
+  const FORM_SUBMIT_URL =
+    "https://docs.google.com/forms/d/e/1FAIpQLSe9LGA5PJRHobQFzmjqtwyBwr00_rnRtc2WENiIc_qJJ_YRSg/formResponse";
+  const FORM_FIELDS = {
+    name:   "entry.1806740295",
+    level:  "entry.1102747939",
+    score:  "entry.495004592",
+    total:  "entry.1263955883",
+    pct:    "entry.82973578",
+    missed: "entry.1636150148",
+  };
+
+  function postSessionToForm() {
+    try {
+      const total = session.words.length;
+      const pct = total ? Math.round((session.correct / total) * 100) : 0;
+      const data = new FormData();
+      data.append(FORM_FIELDS.name,   session.name);
+      data.append(FORM_FIELDS.level,  session.level);
+      data.append(FORM_FIELDS.score,  String(session.correct));
+      data.append(FORM_FIELDS.total,  String(total));
+      data.append(FORM_FIELDS.pct,    String(pct));
+      data.append(FORM_FIELDS.missed, session.missed.map((w) => w.word).join(", "));
+      fetch(FORM_SUBMIT_URL, { method: "POST", mode: "no-cors", body: data }).catch(() => {});
+    } catch (e) { /* best effort */ }
   }
 
   function saveSessionToHistory() {
