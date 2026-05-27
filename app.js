@@ -151,11 +151,11 @@
       wordEmoji.textContent = "";
       wordEmoji.classList.add("hidden");
     }
-    speak(current().word);
+    speakWordWithContext(current());
   }
 
-  sayWordBtn.addEventListener("click", () => speak(current().word));
-  saySentBtn.addEventListener("click", () => speak(current().sentence));
+  sayWordBtn.addEventListener("click", () => speakWordWithContext(current()));
+  saySentBtn.addEventListener("click", () => speakSentence(current().sentence));
 
   answerForm.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -346,14 +346,78 @@
 
   // ---- speech ----
 
-  function speak(text) {
-    if (!("speechSynthesis" in window)) return;
-    window.speechSynthesis.cancel();
+  // Words with this many letters or fewer are repeated and slowed down,
+  // because short words are otherwise hard to make out via TTS.
+  const SHORT_WORD_MAX_LETTERS = 4;
+  const SHORT_WORD_RATE   = 0.7;
+  const NORMAL_WORD_RATE  = 0.9;
+  const SENTENCE_RATE     = 0.95;
+  const REPEAT_GAP_MS     = 500;
+
+  let pendingRepeat = null;
+
+  function cancelSpeech() {
+    if (pendingRepeat) { clearTimeout(pendingRepeat); pendingRepeat = null; }
+    if ("speechSynthesis" in window) window.speechSynthesis.cancel();
+  }
+
+  function makeUtterance(text, rate) {
     const u = new SpeechSynthesisUtterance(text);
-    u.rate = 0.9;
+    u.rate = rate;
     u.pitch = 1.0;
     u.lang = "en-US";
-    window.speechSynthesis.speak(u);
+    return u;
+  }
+
+  function speakWord(word) {
+    if (!("speechSynthesis" in window)) return;
+    cancelSpeech();
+    const text = String(word).trim();
+    const letters = text.replace(/[^a-zA-Z]/g, "").length;
+    const isShort = letters > 0 && letters <= SHORT_WORD_MAX_LETTERS;
+    const rate = isShort ? SHORT_WORD_RATE : NORMAL_WORD_RATE;
+
+    const u1 = makeUtterance(text, rate);
+    if (isShort) {
+      u1.onend = () => {
+        pendingRepeat = setTimeout(() => {
+          pendingRepeat = null;
+          window.speechSynthesis.speak(makeUtterance(text, rate));
+        }, REPEAT_GAP_MS);
+      };
+    }
+    window.speechSynthesis.speak(u1);
+  }
+
+  function speakSentence(sentence) {
+    if (!("speechSynthesis" in window)) return;
+    cancelSpeech();
+    window.speechSynthesis.speak(makeUtterance(String(sentence), SENTENCE_RATE));
+  }
+
+  // For homophones (words that sound like another word), say the word, pause,
+  // then say the sentence — the sentence is what tells the kid which spelling
+  // is meant. The "Say word" button uses this same flow.
+  function speakWordWithContext(entry) {
+    if (!entry || !entry.homophone || !entry.sentence) {
+      speakWord(entry ? entry.word : "");
+      return;
+    }
+    if (!("speechSynthesis" in window)) return;
+    cancelSpeech();
+    const text = String(entry.word).trim();
+    const letters = text.replace(/[^a-zA-Z]/g, "").length;
+    const isShort = letters > 0 && letters <= SHORT_WORD_MAX_LETTERS;
+    const rate = isShort ? SHORT_WORD_RATE : NORMAL_WORD_RATE;
+
+    const u1 = makeUtterance(text, rate);
+    u1.onend = () => {
+      pendingRepeat = setTimeout(() => {
+        pendingRepeat = null;
+        window.speechSynthesis.speak(makeUtterance(String(entry.sentence), SENTENCE_RATE));
+      }, REPEAT_GAP_MS);
+    };
+    window.speechSynthesis.speak(u1);
   }
 
   // ---- utils ----

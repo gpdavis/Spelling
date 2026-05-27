@@ -1,6 +1,9 @@
 // Word lists. Edit freely — just keep the shape:
 // { word: "cat", sentence: "The cat sat on the mat.", emoji: "🐈" }
-// The "emoji" field is optional — leave it off for abstract words.
+// Optional fields:
+//   emoji      — picture shown above the word (leave off for abstract words)
+//   homophone  — set to true for words that sound like another (e.g. there/their/they're).
+//                The app will automatically play the sentence after saying the word.
 window.WORD_LISTS = {
   "Kindergarten": {
     "CVC words": [
@@ -61,7 +64,7 @@ window.WORD_LISTS = {
       { word: "water",    sentence: "I drank a glass of water.",     emoji: "💧" },
       { word: "every",    sentence: "I read every night." },
       { word: "again",    sentence: "Can we play that again?" },
-      { word: "their",    sentence: "The kids found their hats." },
+      { word: "their",    sentence: "The kids found their hats.",   homophone: true },
       { word: "would",    sentence: "I would like a snack." },
       { word: "could",    sentence: "Could you pass the salt?" },
       { word: "should",   sentence: "We should be quiet here." },
@@ -155,25 +158,25 @@ window.WORD_LISTS = {
       { word: "interesting", sentence: "That book was very interesting.",     emoji: "📖" }
     ],
     "Often confused": [
-      { word: "there",   sentence: "Put the box over there." },
-      { word: "their",   sentence: "The kids took their lunches." },
-      { word: "they're", sentence: "They're going to the beach.",       emoji: "🏖️" },
-      { word: "your",    sentence: "Is this your hat?",                 emoji: "🎩" },
-      { word: "you're",  sentence: "You're my best friend." },
-      { word: "its",     sentence: "The dog wagged its tail.",          emoji: "🐕" },
-      { word: "it's",    sentence: "It's a beautiful day.",             emoji: "☀️" }
+      { word: "there",   sentence: "Put the box over there.",            homophone: true },
+      { word: "their",   sentence: "The kids took their lunches.",       homophone: true },
+      { word: "they're", sentence: "They're going to the beach.",        emoji: "🏖️", homophone: true },
+      { word: "your",    sentence: "Is this your hat?",                  emoji: "🎩", homophone: true },
+      { word: "you're",  sentence: "You're my best friend.",             homophone: true },
+      { word: "its",     sentence: "The dog wagged its tail.",           emoji: "🐕", homophone: true },
+      { word: "it's",    sentence: "It's a beautiful day.",              emoji: "☀️", homophone: true }
     ],
     "Homophones": [
-      { word: "to",     sentence: "Please give the book to me." },
-      { word: "too",    sentence: "It's too hot today.",                emoji: "🥵" },
-      { word: "two",    sentence: "I have two pet cats.",               emoji: "✌️" },
-      { word: "here",   sentence: "Come here, please.",                 emoji: "📍" },
-      { word: "hear",   sentence: "Can you hear the music?",            emoji: "👂" },
-      { word: "know",   sentence: "I know the answer." },
-      { word: "no",     sentence: "There are no biscuits left.",        emoji: "❌" },
-      { word: "blue",   sentence: "The sky is blue today.",             emoji: "🔵" },
-      { word: "blew",   sentence: "The wind blew the leaves away.",     emoji: "💨" },
-      { word: "week",   sentence: "We have one more week of school.",   emoji: "📅" }
+      { word: "to",     sentence: "Please give the book to me.",         homophone: true },
+      { word: "too",    sentence: "It's too hot today.",                 emoji: "🥵", homophone: true },
+      { word: "two",    sentence: "I have two pet cats.",                emoji: "✌️", homophone: true },
+      { word: "here",   sentence: "Come here, please.",                  emoji: "📍", homophone: true },
+      { word: "hear",   sentence: "Can you hear the music?",             emoji: "👂", homophone: true },
+      { word: "know",   sentence: "I know the answer.",                  homophone: true },
+      { word: "no",     sentence: "There are no biscuits left.",         emoji: "❌", homophone: true },
+      { word: "blue",   sentence: "The sky is blue today.",              emoji: "🔵", homophone: true },
+      { word: "blew",   sentence: "The wind blew the leaves away.",      emoji: "💨", homophone: true },
+      { word: "week",   sentence: "We have one more week of school.",    emoji: "📅", homophone: true }
     ],
     "Prefixes (un-, re-, dis-, pre-)": [
       { word: "unhappy",   sentence: "She felt unhappy after losing.",    emoji: "😢" },
@@ -200,10 +203,10 @@ window.WORD_LISTS = {
       { word: "movement",   sentence: "I saw a small movement in the bushes." }
     ],
     "Silent letters": [
-      { word: "knight",  sentence: "The brave knight rode a horse.",    emoji: "🛡️" },
+      { word: "knight",  sentence: "The brave knight rode a horse.",    emoji: "🛡️", homophone: true },
       { word: "knee",    sentence: "I scraped my knee on the path.",    emoji: "🦵" },
-      { word: "knot",    sentence: "Can you tie a knot in this rope?" },
-      { word: "write",   sentence: "I will write a letter to grandma.", emoji: "✍️" },
+      { word: "knot",    sentence: "Can you tie a knot in this rope?",  homophone: true },
+      { word: "write",   sentence: "I will write a letter to grandma.", emoji: "✍️", homophone: true },
       { word: "thumb",   sentence: "Be careful not to hit your thumb.", emoji: "👍" },
       { word: "climb",   sentence: "We can climb the tree in the park.", emoji: "🧗" },
       { word: "lamb",    sentence: "The lamb followed its mother.",     emoji: "🐑" },
@@ -248,7 +251,7 @@ window.WORD_LISTS = {
       { word: "conscientious", sentence: "She is a conscientious student.",   emoji: "🎓" }
     ],
     "Tricky spellings": [
-      { word: "queue",         sentence: "We waited in a long queue.",        emoji: "🚶‍♂️🚶‍♀️" },
+      { word: "queue",         sentence: "We waited in a long queue.",        emoji: "🚶‍♂️🚶‍♀️", homophone: true },
       { word: "vacuum",        sentence: "I need to vacuum the carpet.",      emoji: "🧹" },
       { word: "rhyme",         sentence: "Can you think of a word that rhymes with cat?", emoji: "🎵" },
       { word: "lieutenant",    sentence: "The lieutenant gave the order.",    emoji: "🎖️" },
