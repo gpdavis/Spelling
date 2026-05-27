@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:www.spelfabet.com.au)",
+      "WebFetch(domain:www.fireflyeducation.com.au)",
+      "WebFetch(domain:www.australiancurriculum.edu.au)",
+      "Bash(awk ' *)"
+    ]
+  }
+}

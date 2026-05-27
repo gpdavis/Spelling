@@ -19,6 +19,7 @@
   const answerForm   = $("answer-form");
   const answerInput  = $("answer-input");
   const feedback     = $("feedback");
+  const nextBtn      = $("next-btn");
   const progress     = $("progress");
   const scoreEl      = $("score");
   const missedList   = $("missed-list");
@@ -261,37 +262,46 @@
   sayWordBtn.addEventListener("click", () => speakWordWithContext(current()));
   saySentBtn.addEventListener("click", () => speakSentence(current().sentence));
 
+  function advanceQuiz() {
+    nextBtn.classList.add("hidden");
+    answerForm.classList.remove("hidden");
+    feedback.textContent = "";
+    feedback.className = "";
+    if (session.i >= session.words.length) {
+      showResults();
+    } else {
+      setQuizMascot("Standard");
+      showCurrent();
+      answerInput.focus();
+    }
+  }
+
+  nextBtn.addEventListener("click", advanceQuiz);
+
   answerForm.addEventListener("submit", (e) => {
     e.preventDefault();
     const guess = answerInput.value.trim().toLowerCase();
     if (!guess) return;
     const target = current().word.toLowerCase();
     const wasCorrect = guess === target;
+    answerInput.value = "";
     if (wasCorrect) {
       session.correct += 1;
       feedback.textContent = "✅ Correct!";
       feedback.className = "good";
       setQuizMascot("Correct" + (1 + Math.floor(Math.random() * 3)));
       celebrateFromMascot();
+      session.i += 1;
+      setTimeout(advanceQuiz, 900);
     } else {
       session.missed.push(current());
       feedback.textContent = `❌ The word was "${current().word}".`;
       feedback.className = "bad";
       setQuizMascot("Incorrect" + (1 + Math.floor(Math.random() * 3)));
-    }
-    answerInput.value = "";
-    session.i += 1;
-    const delay = wasCorrect ? 900 : 8000;
-    if (session.i >= session.words.length) {
-      setTimeout(showResults, delay);
-    } else {
-      setTimeout(() => {
-        feedback.textContent = "";
-        feedback.className = "";
-        setQuizMascot("Standard");
-        showCurrent();
-        answerInput.focus();
-      }, delay);
+      session.i += 1;
+      answerForm.classList.add("hidden");
+      nextBtn.classList.remove("hidden");
+      nextBtn.focus();
     }
   });
 
