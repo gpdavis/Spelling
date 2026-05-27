@@ -17,6 +17,7 @@
   const historyBtn   = $("history-btn");
   const wordEmoji    = $("word-emoji");
   const questionTextEl = $("question-text");
+  const numberLineEl   = $("number-line");
   const wordControlsEl = $("word-controls");
   const sayWordBtn   = $("say-word-btn");
   const saySentBtn   = $("say-sentence-btn");
@@ -479,6 +480,22 @@
     return session.words[session.i];
   }
 
+  function ensureNumberLine() {
+    if (numberLineEl.childElementCount) return;
+    for (let i = 0; i <= 20; i++) {
+      const m = document.createElement("div");
+      m.className = "nl-mark" + (i % 5 === 0 ? " major" : "");
+      const tick = document.createElement("div");
+      tick.className = "tick";
+      const num = document.createElement("div");
+      num.className = "num";
+      num.textContent = i;
+      m.appendChild(tick);
+      m.appendChild(num);
+      numberLineEl.appendChild(m);
+    }
+  }
+
   function showCurrent() {
     const label = session.subject === "maths" ? "Question" : "Word";
     progress.textContent = `${label} ${session.i + 1} of ${session.words.length}`;
@@ -488,8 +505,15 @@
       wordControlsEl.classList.add("hidden");
       questionTextEl.textContent = cur.question;
       questionTextEl.classList.remove("hidden");
+      if (cur.aid === "numberline") {
+        ensureNumberLine();
+        numberLineEl.classList.remove("hidden");
+      } else {
+        numberLineEl.classList.add("hidden");
+      }
     } else {
       questionTextEl.classList.add("hidden");
+      numberLineEl.classList.add("hidden");
       wordControlsEl.classList.remove("hidden");
       const emoji = cur.emoji;
       if (emoji) {

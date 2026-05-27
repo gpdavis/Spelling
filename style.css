@@ -137,6 +137,50 @@ button.primary:hover { filter: brightness(1.1); }
   user-select: none;
 }
 
+.number-line {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  width: 100%;
+  margin: 0.25rem 0 1rem;
+  padding: 0.5rem 0.25rem 0.4rem;
+  border-radius: 8px;
+  background: var(--card-2);
+  border: 1px solid var(--border);
+  color: var(--muted);
+  user-select: none;
+}
+
+.nl-mark {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex: 1 1 0;
+  min-width: 0;
+}
+
+.nl-mark .tick {
+  width: 1px;
+  height: 10px;
+  background: var(--muted);
+}
+
+.nl-mark .num {
+  margin-top: 0.2rem;
+  font-size: 0.75rem;
+}
+
+.nl-mark.major .tick {
+  height: 16px;
+  width: 2px;
+  background: var(--accent);
+}
+
+.nl-mark.major .num {
+  color: var(--ink);
+  font-weight: 600;
+}
+
 .subject-buttons {
   gap: 0.75rem;
   margin: 0.5rem 0 0.75rem;
