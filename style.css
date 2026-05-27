@@ -193,34 +193,6 @@ button.primary:hover { filter: brightness(1.1); }
   font-size: 1.1rem;
 }
 
-.subject-btn.full-width {
-  width: 100%;
-  flex: 1 1 100%;
-}
-
-.sublist-picker {
-  margin: 0.5rem 0 1rem;
-}
-
-.sublist-prompt {
-  margin: 0.25rem 0 0.5rem;
-  text-align: center;
-}
-
-.sublist-buttons {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  justify-content: center;
-}
-
-.sublist-buttons button {
-  flex: 1 1 calc(50% - 0.25rem);
-  min-width: 12rem;
-  padding: 0.7rem 0.8rem;
-  font-size: 0.98rem;
-}
-
 .word-controls {
   display: flex;
   gap: 0.5rem;

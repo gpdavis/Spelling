@@ -35,7 +35,7 @@ Australian English throughout (colour, centre, organise, travelled).
 
 ### Maths — [maths.js](maths.js)
 
-Aligned to Australian Curriculum v9 Mathematics. Each year has 3–4 topics; the kid picks one per session.
+Aligned to Australian Curriculum v9 Mathematics. Each year has 3–6 topics; a session mixes 10 questions drawn at random from all topics for that year.
 
 - **Kindergarten** — Count forward · One more / one less · Add to 5
 - **Year 1** — Add and subtract to 20 · Doubles and halves · Skip count (2s, 5s, 10s)
@@ -85,7 +85,7 @@ Fields submitted:
 | Field | Spelling example | Maths example |
 |---|---|---|
 | Name | `Lucy` | `Lucy` |
-| Level | `Year 3 · Spelling` | `Year 4 · Maths · × facts (6s, 7s, 8s, 9s)` |
+| Level | `Year 3 · Spelling` | `Year 4 · Maths` |
 | Score (end correct) | `10` | `9` |
 | Total | `10` | `10` |
 | Percent | `100` | `90` |

@@ -11,9 +11,8 @@
   const changeBtn    = $("change-settings-btn");
   const nameInput    = $("name-input");
   const levelSelect  = $("level-select");
-  const startSpellingBtn    = $("start-spelling-btn");
-  const mathsSublists       = $("maths-sublists");
-  const mathsSublistButtons = $("maths-sublist-buttons");
+  const startSpellingBtn = $("start-spelling-btn");
+  const startMathsBtn    = $("start-maths-btn");
   const historyBtn   = $("history-btn");
   const wordEmoji    = $("word-emoji");
   const questionTextEl = $("question-text");
@@ -329,7 +328,6 @@
     } else {
       expandSetup();
     }
-    refreshMathsTopics(levelSelect.value);
     refreshHomeStreak();
     maybeReloadForUpdate();
   }
@@ -360,10 +358,6 @@
 
   changeBtn.addEventListener("click", expandSetup);
 
-  levelSelect.addEventListener("change", () => {
-    refreshMathsTopics(levelSelect.value);
-  });
-
   startSpellingBtn.addEventListener("click", () => {
     const name  = nameInput.value.trim();
     const level = levelSelect.value;
@@ -376,30 +370,17 @@
     beginAttempt({ name, level, subject: "spelling", subList: null, words });
   });
 
-  function refreshMathsTopics(level) {
-    const subs = mathsLists[level] || {};
-    mathsSublistButtons.innerHTML = "";
-    Object.keys(subs).forEach((subName) => {
-      const btn = document.createElement("button");
-      btn.textContent = subName;
-      btn.addEventListener("click", () => {
-        const name = nameInput.value.trim();
-        if (!name) { nameInput.focus(); return; }
-        const questions = buildMathsSession(level, subName);
-        if (!questions.length) return;
-        localStorage.setItem(NAME_KEY, name);
-        localStorage.setItem(LEVEL_KEY, level);
-        beginAttempt({
-          name,
-          level,
-          subject: "maths",
-          subList: subName,
-          words: questions,
-        });
-      });
-      mathsSublistButtons.appendChild(btn);
-    });
-  }
+  startMathsBtn.addEventListener("click", () => {
+    const name  = nameInput.value.trim();
+    const level = levelSelect.value;
+    if (!name) { nameInput.focus(); return; }
+    if (!level || !mathsLists[level]) return;
+    localStorage.setItem(NAME_KEY, name);
+    localStorage.setItem(LEVEL_KEY, level);
+    const questions = buildMathsSession(level);
+    if (!questions.length) return;
+    beginAttempt({ name, level, subject: "maths", subList: null, words: questions });
+  });
 
   function beginAttempt({ name, level, subject, subList, words }) {
     if (attempt && !attempt.posted) postAttemptToForm(attempt);
@@ -425,30 +406,30 @@
     return shuffle(all).slice(0, Math.min(WORDS_PER_SESSION, all.length));
   }
 
-  function buildMathsSession(level, subName) {
-    const sub = (mathsLists[level] || {})[subName];
-    if (!sub) return [];
-    if (Array.isArray(sub)) {
-      return shuffle(sub.slice()).slice(0, Math.min(WORDS_PER_SESSION, sub.length));
-    }
-    if (sub.generator && mathsGens[sub.generator]) {
-      const gen = mathsGens[sub.generator];
-      const args = sub.args || {};
-      const seen = new Set();
-      const out = [];
-      // Cap attempts so a small generator space can't loop forever
-      let tries = 0;
-      while (out.length < WORDS_PER_SESSION && tries < 200) {
-        tries += 1;
-        const q = gen(args);
-        if (!q || !q.question) continue;
-        if (seen.has(q.question)) continue;
-        seen.add(q.question);
-        out.push(q);
+  function buildMathsSession(level) {
+    const subs = mathsLists[level] || {};
+    const topics = Object.values(subs);
+    if (!topics.length) return [];
+    const seen = new Set();
+    const out = [];
+    // Pick a random topic each iteration; skip duplicates. Cap attempts so a
+    // small total question space can't hang the page.
+    let tries = 0;
+    while (out.length < WORDS_PER_SESSION && tries < 400) {
+      tries += 1;
+      const topic = topics[Math.floor(Math.random() * topics.length)];
+      let q = null;
+      if (Array.isArray(topic)) {
+        q = topic[Math.floor(Math.random() * topic.length)];
+      } else if (topic.generator && mathsGens[topic.generator]) {
+        q = mathsGens[topic.generator](topic.args || {});
       }
-      return out;
+      if (!q || !q.question) continue;
+      if (seen.has(q.question)) continue;
+      seen.add(q.question);
+      out.push(q);
     }
-    return [];
+    return out;
   }
 
   // ---- quiz ----
