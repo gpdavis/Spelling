@@ -15,9 +15,10 @@
   const startMathsBtn    = $("start-maths-btn");
   const historyBtn   = $("history-btn");
   const wordEmoji    = $("word-emoji");
-  const questionTextEl = $("question-text");
-  const numberLineEl   = $("number-line");
-  const wordControlsEl = $("word-controls");
+  const questionContextEl = $("question-context");
+  const questionTextEl    = $("question-text");
+  const numberLineEl      = $("number-line");
+  const wordControlsEl    = $("word-controls");
   const sayWordBtn   = $("say-word-btn");
   const saySentBtn   = $("say-sentence-btn");
   const answerForm   = $("answer-form");
@@ -412,8 +413,8 @@
 
   function buildMathsSession(level) {
     const subs = mathsLists[level] || {};
-    const topics = Object.values(subs);
-    if (!topics.length) return [];
+    const entries = Object.entries(subs);
+    if (!entries.length) return [];
     const seen = new Set();
     const out = [];
     // Pick a random topic each iteration; skip duplicates. Cap attempts so a
@@ -421,14 +422,17 @@
     let tries = 0;
     while (out.length < WORDS_PER_SESSION && tries < 400) {
       tries += 1;
-      const topic = topics[Math.floor(Math.random() * topics.length)];
+      const [topicName, topic] = entries[Math.floor(Math.random() * entries.length)];
       let q = null;
       if (Array.isArray(topic)) {
-        q = topic[Math.floor(Math.random() * topic.length)];
+        const picked = topic[Math.floor(Math.random() * topic.length)];
+        // Clone so we can attach context without mutating the source list
+        if (picked) q = { ...picked };
       } else if (topic.generator && mathsGens[topic.generator]) {
         q = mathsGens[topic.generator](topic.args || {});
       }
       if (!q || !q.question) continue;
+      if (!q.context) q.context = topicName;
       if (seen.has(q.question)) continue;
       seen.add(q.question);
       out.push(q);
@@ -496,6 +500,12 @@
     if (session.subject === "maths") {
       wordEmoji.classList.add("hidden");
       wordControlsEl.classList.add("hidden");
+      if (cur.context) {
+        questionContextEl.textContent = cur.context;
+        questionContextEl.classList.remove("hidden");
+      } else {
+        questionContextEl.classList.add("hidden");
+      }
       questionTextEl.textContent = cur.question;
       questionTextEl.classList.remove("hidden");
       if (cur.aid === "numberline") {
@@ -505,6 +515,7 @@
         numberLineEl.classList.add("hidden");
       }
     } else {
+      questionContextEl.classList.add("hidden");
       questionTextEl.classList.add("hidden");
       numberLineEl.classList.add("hidden");
       wordControlsEl.classList.remove("hidden");

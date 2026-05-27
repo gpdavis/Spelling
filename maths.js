@@ -21,18 +21,18 @@
     // ---- Foundation / Kindergarten ----
     kindyCountForward() {
       const start = randInt(1, 15);
-      return { question: `${start}, ${start + 1}, ${start + 2}, ?`, answer: String(start + 3) };
+      return { question: `${start}, ${start + 1}, ${start + 2}, ?`, answer: String(start + 3), context: "Counting forward" };
     },
     kindyOneMoreLess() {
       const n = randInt(1, 18);
       return Math.random() < 0.5
-        ? { question: `1 more than ${n} = ?`, answer: String(n + 1) }
-        : { question: `1 less than ${n + 1} = ?`, answer: String(n) };
+        ? { question: `1 more than ${n} = ?`, answer: String(n + 1), context: "One more" }
+        : { question: `1 less than ${n + 1} = ?`, answer: String(n), context: "One less" };
     },
     kindyAddTo5() {
       const a = randInt(0, 5);
       const b = randInt(0, 5 - a);
-      return { question: `${a} + ${b} = ?`, answer: String(a + b) };
+      return { question: `${a} + ${b} = ?`, answer: String(a + b), context: "Add to 5" };
     },
 
     // ---- Year 1 ----
@@ -40,20 +40,20 @@
       if (Math.random() < 0.5) {
         const a = randInt(2, 15);
         const b = randInt(2, 20 - a);
-        return { question: `${a} + ${b} = ?`, answer: String(a + b) };
+        return { question: `${a} + ${b} = ?`, answer: String(a + b), context: "Addition" };
       } else {
         const a = randInt(6, 20);
         const b = randInt(1, a - 1);
-        return { question: `${a} − ${b} = ?`, answer: String(a - b) };
+        return { question: `${a} − ${b} = ?`, answer: String(a - b), context: "Subtraction" };
       }
     },
     y1DoublesHalves() {
       if (Math.random() < 0.5) {
         const n = randInt(1, 10);
-        return { question: `Double ${n} = ?`, answer: String(n * 2) };
+        return { question: `Double ${n} = ?`, answer: String(n * 2), context: "Doubles" };
       } else {
         const half = randInt(1, 10);
-        return { question: `Half of ${half * 2} = ?`, answer: String(half) };
+        return { question: `Half of ${half * 2} = ?`, answer: String(half), context: "Halves" };
       }
     },
 
@@ -67,25 +67,28 @@
       const start = back ? randInt(margin, 120) : randInt(0, 120 - margin);
       const seq = [start, start + dir * step, start + 2 * dir * step, start + 3 * dir * step];
       const answer = start + 4 * dir * step;
-      return { question: `${seq.join(", ")}, ?`, answer: String(answer) };
+      const context = back
+        ? `Backward skip counting by ${step}`
+        : `Skip counting by ${step}`;
+      return { question: `${seq.join(", ")}, ?`, answer: String(answer), context };
     },
 
     // ---- Year 2: simple +/- with a number line and friends-to-10 ----
     y2AddNumberLine() {
       const a = randInt(1, 12);
       const b = randInt(1, 20 - a);
-      return { question: `${a} + ${b} = ?`, answer: String(a + b), aid: "numberline" };
+      return { question: `${a} + ${b} = ?`, answer: String(a + b), aid: "numberline", context: "Addition" };
     },
     y2SubNumberLine() {
       const a = randInt(5, 20);
       const b = randInt(1, a - 1);
-      return { question: `${a} − ${b} = ?`, answer: String(a - b), aid: "numberline" };
+      return { question: `${a} − ${b} = ?`, answer: String(a - b), aid: "numberline", context: "Subtraction" };
     },
     friendsToTen() {
       const a = randInt(1, 9);
       return Math.random() < 0.5
-        ? { question: `${a} + ? = 10`, answer: String(10 - a) }
-        : { question: `What goes with ${a} to make 10?`, answer: String(10 - a) };
+        ? { question: `${a} + ? = 10`, answer: String(10 - a), context: "Friends to 10" }
+        : { question: `What goes with ${a} to make 10?`, answer: String(10 - a), context: "Friends to 10" };
     },
 
     // ---- Multiplication and division ----
@@ -94,15 +97,17 @@
       const b = randInt(2, maxMultiplier);
       // randomise which side the "interesting" factor lands on so kids
       // don't see a fixed table column every time
+      const value = a * b;
+      const context = `Times tables (${a}×)`;
       return Math.random() < 0.5
-        ? { question: `${a} × ${b}`, answer: String(a * b) }
-        : { question: `${b} × ${a}`, answer: String(a * b) };
+        ? { question: `${a} × ${b}`, answer: String(value), context }
+        : { question: `${b} × ${a}`, answer: String(value), context };
     },
     divisionFacts({ tables, maxMultiplier = 10 }) {
       const divisor = pick(tables);
       const quotient = randInt(2, maxMultiplier);
       const dividend = divisor * quotient;
-      return { question: `${dividend} ÷ ${divisor}`, answer: String(quotient) };
+      return { question: `${dividend} ÷ ${divisor}`, answer: String(quotient), context: "Division facts" };
     },
   };
 
