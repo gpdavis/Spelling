@@ -241,7 +241,9 @@
     if (!entry) return { count: 0, todayDone: {} };
     const today = todayStr();
     const gap = entry.lastCounted ? daysBetween(entry.lastCounted, today) : null;
-    const liveCount = (gap === 0 || gap === 1) ? (entry.count || 0) : 0;
+    const rawCount = Number(entry.count);
+    const safeCount = Number.isFinite(rawCount) && rawCount >= 0 ? Math.floor(rawCount) : 0;
+    const liveCount = (gap === 0 || gap === 1) ? safeCount : 0;
     const todayDone = entry.todayDate === today ? (entry.todayDone || {}) : {};
     return { count: liveCount, todayDone };
   }
@@ -261,23 +263,28 @@
     const mathsDone    = !!todayDone.maths;
     const bothDone     = spellingDone && mathsDone;
 
-    const lines = [];
+    streakEl.textContent = "";
+    const line = document.createElement("div");
+    line.className = "streak-line";
     if (count > 0) {
       const dayWord = count === 1 ? "day" : "days";
-      lines.push(`<div class="streak-line">🔥 ${count} ${dayWord} in a row!</div>`);
+      line.textContent = `🔥 ${count} ${dayWord} in a row!`;
     } else if (spellingDone || mathsDone) {
-      lines.push(`<div class="streak-line">Almost there! Do both today to start a streak.</div>`);
+      line.textContent = "Almost there! Do both today to start a streak.";
     } else {
-      lines.push(`<div class="streak-line">Do spelling and maths today to start a streak!</div>`);
+      line.textContent = "Do spelling and maths today to start a streak!";
     }
+    streakEl.appendChild(line);
 
     if (!bothDone) {
+      const sub = document.createElement("div");
+      sub.className = "streak-sub";
       const s = spellingDone ? "✅" : "⬜";
       const m = mathsDone    ? "✅" : "⬜";
-      lines.push(`<div class="streak-sub">Today: ${s} Spelling · ${m} Maths</div>`);
+      sub.textContent = `Today: ${s} Spelling · ${m} Maths`;
+      streakEl.appendChild(sub);
     }
 
-    streakEl.innerHTML = lines.join("");
     streakEl.classList.remove("hidden");
 
     if (count >= CHOCOLATE_STREAK) {
