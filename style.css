@@ -87,6 +87,14 @@ button.primary {
 
 button.primary:hover { filter: brightness(1.05); }
 
+.word-emoji {
+  font-size: 5rem;
+  line-height: 1;
+  text-align: center;
+  margin: 0.25rem 0 0.75rem;
+  user-select: none;
+}
+
 .word-controls {
   display: flex;
   gap: 0.5rem;
@@ -134,4 +142,56 @@ button.primary:hover { filter: brightness(1.05); }
   display: flex;
   gap: 0.5rem;
   flex-wrap: wrap;
+}
+
+.header-row {
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.header-row h2 { margin: 0; }
+
+.muted { color: var(--muted); font-size: 0.9rem; margin-bottom: 0.75rem; }
+
+#history-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+#history-list li {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  margin-bottom: 0.5rem;
+  background: #fafafa;
+}
+
+.entry-top {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+  align-items: baseline;
+}
+
+.entry-name { font-weight: 600; }
+
+.entry-score.good { color: var(--good); font-weight: 600; }
+.entry-score.bad  { color: var(--bad);  font-weight: 600; }
+.entry-score.ok   { color: var(--ink);  font-weight: 600; }
+
+.entry-meta { color: var(--muted); font-size: 0.85rem; }
+
+.entry-missed {
+  margin-top: 0.4rem;
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.empty {
+  text-align: center;
+  color: var(--muted);
+  padding: 1.5rem 0;
 }

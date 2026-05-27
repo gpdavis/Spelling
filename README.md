@@ -8,14 +8,10 @@ No build step, no server — just three static files.
 
 Open `index.html` in any modern browser (Chrome/Edge/Safari/Firefox). Speech requires the browser's built-in `SpeechSynthesis` API, which all modern browsers have.
 
-## Publish on GitHub Pages
+## Published on GitHub Pages
 
-1. Push this repo to GitHub.
-2. In the repo, go to **Settings → Pages**.
-3. Under **Source**, choose **Deploy from a branch**, pick `main` and `/ (root)`, then **Save**.
-4. After ~1 minute the app is live at `https://<your-username>.github.io/Spelling/`.
+The app is live at `https://gpdavis.github.io/Spelling/`.
 
-Share that URL with the kids — they can bookmark it on a phone/tablet/laptop.
 
 ## Editing word lists
 
@@ -32,3 +28,13 @@ Add new levels or lists by following the same shape — the dropdowns are built 
 - Progress (name) is remembered per-device via `localStorage`.
 - Each device tracks its own state; there are no accounts.
 - The speech voice is whatever the browser provides — quality varies by OS.
+
+## Testing helpers
+
+To wipe all saved history on the current device, open the browser's DevTools console (F12 → Console tab) and run:
+
+```js
+clearSpellingHistory()
+```
+
+It prints how many entries were cleared and refreshes the history view if it's open.

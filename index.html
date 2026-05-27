@@ -26,11 +26,27 @@
       List
       <select id="list-select"></select>
     </label>
-    <button id="start-btn" class="primary">Start</button>
+    <div class="row">
+      <button id="start-btn" class="primary">Start</button>
+      <button id="history-btn">View history</button>
+    </div>
+  </section>
+
+  <section id="history" class="card hidden">
+    <div class="row header-row">
+      <h2>History</h2>
+      <div class="row">
+        <select id="history-filter" aria-label="Filter by name"></select>
+        <button id="back-from-history-btn">Back</button>
+      </div>
+    </div>
+    <div id="history-summary" class="muted"></div>
+    <ul id="history-list"></ul>
   </section>
 
   <section id="quiz" class="card hidden">
     <div id="progress"></div>
+    <div id="word-emoji" class="word-emoji hidden" aria-hidden="true"></div>
     <div class="word-controls">
       <button id="say-word-btn">🔊 Say the word</button>
       <button id="say-sentence-btn">💬 Use it in a sentence</button>
