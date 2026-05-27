@@ -36,6 +36,37 @@
 
   const lists = window.WORD_LISTS || {};
 
+  const quizMascot    = $("quiz-mascot");
+  const resultsMascot = $("results-mascot");
+
+  const MASCOT_BY_LEVEL = {
+    "Kindergarten": "Monty",
+    "Year 1": "Monty",
+    "Year 2": "Monty",
+    "Year 3": "Monty",
+    "Year 4": "NinjaBunny",
+    "Year 5": "NinjaBunny",
+    "Year 6": "NinjaBunny",
+  };
+
+  function mascotFor(level) {
+    return MASCOT_BY_LEVEL[level] || "Monty";
+  }
+
+  function mascotSrc(level, variant) {
+    return `Images/${mascotFor(level)}_${variant}.png`;
+  }
+
+  function setQuizMascot(variant) {
+    if (!session) return;
+    quizMascot.src = mascotSrc(session.level, variant);
+    quizMascot.classList.remove("react");
+    if (variant !== "Standard") {
+      void quizMascot.offsetWidth;
+      quizMascot.classList.add("react");
+    }
+  }
+
   let session = null;
 
   // ---- setup screen ----
@@ -133,6 +164,7 @@
     feedback.textContent = "";
     feedback.className = "";
     answerInput.value = "";
+    setQuizMascot("Standard");
     showCurrent();
     answerInput.focus();
   }
@@ -166,10 +198,12 @@
       session.correct += 1;
       feedback.textContent = "✅ Correct!";
       feedback.className = "good";
+      setQuizMascot("Correct" + (1 + Math.floor(Math.random() * 3)));
     } else {
       session.missed.push(current());
       feedback.textContent = `❌ The word was "${current().word}".`;
       feedback.className = "bad";
+      setQuizMascot("Incorrect" + (1 + Math.floor(Math.random() * 3)));
     }
     answerInput.value = "";
     session.i += 1;
@@ -179,6 +213,7 @@
       setTimeout(() => {
         feedback.textContent = "";
         feedback.className = "";
+        setQuizMascot("Standard");
         showCurrent();
         answerInput.focus();
       }, 900);
@@ -191,6 +226,9 @@
     quiz.classList.add("hidden");
     results.classList.remove("hidden");
     const total = session.words.length;
+    const pct = total ? session.correct / total : 0;
+    const variant = pct === 1 ? "Happy" : pct >= 0.7 ? "Correct1" : pct >= 0.4 ? "Standard" : "Incorrect3";
+    resultsMascot.src = mascotSrc(session.level, variant);
     scoreEl.textContent = `${session.name}: ${session.correct} of ${total} correct`;
     missedList.innerHTML = "";
     session.missed.forEach((w) => {
