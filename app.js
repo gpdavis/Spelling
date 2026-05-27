@@ -252,26 +252,30 @@
   }
 
   function renderStreakInto(name, streakEl, chocolateEl) {
+    streakEl.textContent = "";
+    const line = document.createElement("div");
+    line.className = "streak-line";
+
     if (!name) {
-      streakEl.classList.add("hidden");
+      line.textContent = "You need to complete spelling and maths for a streak";
+      streakEl.appendChild(line);
+      streakEl.classList.remove("hidden");
       chocolateEl.classList.add("hidden");
       return;
     }
+
     const { count, todayDone } = getStreakStatus(name);
     const spellingDone = !!todayDone.spelling;
     const mathsDone    = !!todayDone.maths;
     const bothDone     = spellingDone && mathsDone;
 
-    streakEl.textContent = "";
-    const line = document.createElement("div");
-    line.className = "streak-line";
     if (count > 0) {
       const dayWord = count === 1 ? "day" : "days";
       line.textContent = `🔥 ${count} ${dayWord} in a row!`;
     } else if (spellingDone || mathsDone) {
       line.textContent = "Almost there! Do both today to start a streak.";
     } else {
-      line.textContent = "Do spelling and maths today to start a streak!";
+      line.textContent = "You need to complete spelling and maths for a streak";
     }
     streakEl.appendChild(line);
 
