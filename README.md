@@ -1,4 +1,4 @@
-# Spelling Practice
+# Spellatron
 
 A browser-only spelling app for kids. The app says a word, says it in a sentence, the kid types it, gets reactions from one of two animated mascots, and sees a score at the end. Missed words can be retried.
 
