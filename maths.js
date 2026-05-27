@@ -200,10 +200,12 @@
         { question: "20% as a fraction",   answer: "1/5" }
       ],
       "Perimeter and metric conversions": [
-        { question: "Perimeter of a 6 cm × 4 cm rectangle (cm)", answer: "20" },
-        { question: "Perimeter of a 5 cm × 5 cm square (cm)",    answer: "20" },
-        { question: "Perimeter of a 8 m × 3 m rectangle (m)",    answer: "22" },
-        { question: "Perimeter of a 10 cm × 7 cm rectangle (cm)",answer: "34" },
+        { question: "What is the perimeter?", answer: "20", unit: "cm", shape: { type: "rectangle", w: 6, h: 4, unit: "cm" } },
+        { question: "What is the perimeter?", answer: "20", unit: "cm", shape: { type: "rectangle", w: 5, h: 5, unit: "cm" } },
+        { question: "What is the perimeter?", answer: "22", unit: "m",  shape: { type: "rectangle", w: 8, h: 3, unit: "m" } },
+        { question: "What is the perimeter?", answer: "34", unit: "cm", shape: { type: "rectangle", w: 10, h: 7, unit: "cm" } },
+        { question: "What is the perimeter?", answer: "30", unit: "cm", shape: { type: "rectangle", w: 9, h: 6, unit: "cm" } },
+        { question: "What is the perimeter?", answer: "16", unit: "m",  shape: { type: "rectangle", w: 4, h: 4, unit: "m" } },
         { question: "How many cm in 2 m?",                       answer: "200" },
         { question: "How many cm in 1.5 m?",                     answer: "150" },
         { question: "How many mm in 4 cm?",                      answer: "40" },

@@ -16,6 +16,7 @@
   const historyBtn   = $("history-btn");
   const wordEmoji    = $("word-emoji");
   const questionContextEl = $("question-context");
+  const questionImageEl   = $("question-image");
   const questionTextEl    = $("question-text");
   const numberLineEl      = $("number-line");
   const wordControlsEl    = $("word-controls");
@@ -477,6 +478,65 @@
     return session.words[session.i];
   }
 
+  // SVG namespace for shape rendering
+  const SVG_NS = "http://www.w3.org/2000/svg";
+
+  function svgEl(name, attrs) {
+    const el = document.createElementNS(SVG_NS, name);
+    if (attrs) {
+      for (const k in attrs) el.setAttribute(k, attrs[k]);
+    }
+    return el;
+  }
+
+  function renderRectangleShape(shape) {
+    const { w, h, unit } = shape;
+    // Scale so the longer side is a fixed length, keeping aspect ratio
+    const maxSide = 180;
+    const scale = maxSide / Math.max(w, h);
+    const rw = Math.max(50, w * scale);
+    const rh = Math.max(50, h * scale);
+    const padX = 38, padY = 30;
+    const svgW = rw + padX * 2;
+    const svgH = rh + padY * 2;
+    const svg = svgEl("svg", {
+      viewBox: `0 0 ${svgW} ${svgH}`,
+      xmlns: SVG_NS,
+      role: "img",
+    });
+    svg.appendChild(svgEl("rect", {
+      x: padX, y: padY, width: rw, height: rh,
+      fill: "rgba(129, 140, 248, 0.12)",
+      stroke: "currentColor",
+      "stroke-width": "2",
+    }));
+    const widthLabel = svgEl("text", {
+      x: padX + rw / 2, y: padY - 10,
+      "text-anchor": "middle",
+      fill: "currentColor",
+      "font-size": "16",
+      "font-weight": "600",
+    });
+    widthLabel.textContent = `${w} ${unit || ""}`.trim();
+    svg.appendChild(widthLabel);
+    const heightLabel = svgEl("text", {
+      x: padX + rw + 8, y: padY + rh / 2 + 6,
+      "text-anchor": "start",
+      fill: "currentColor",
+      "font-size": "16",
+      "font-weight": "600",
+    });
+    heightLabel.textContent = `${h} ${unit || ""}`.trim();
+    svg.appendChild(heightLabel);
+    return svg;
+  }
+
+  function renderShape(shape) {
+    if (!shape || !shape.type) return null;
+    if (shape.type === "rectangle") return renderRectangleShape(shape);
+    return null;
+  }
+
   function ensureNumberLine() {
     if (numberLineEl.childElementCount) return;
     for (let i = 0; i <= 20; i++) {
@@ -506,6 +566,14 @@
       } else {
         questionContextEl.classList.add("hidden");
       }
+      questionImageEl.textContent = "";
+      const shapeSvg = renderShape(cur.shape);
+      if (shapeSvg) {
+        questionImageEl.appendChild(shapeSvg);
+        questionImageEl.classList.remove("hidden");
+      } else {
+        questionImageEl.classList.add("hidden");
+      }
       questionTextEl.textContent = cur.question;
       questionTextEl.classList.remove("hidden");
       if (cur.aid === "numberline") {
@@ -516,6 +584,7 @@
       }
     } else {
       questionContextEl.classList.add("hidden");
+      questionImageEl.classList.add("hidden");
       questionTextEl.classList.add("hidden");
       numberLineEl.classList.add("hidden");
       wordControlsEl.classList.remove("hidden");
@@ -577,9 +646,11 @@
   }
 
   function correctAnswerText(cur) {
-    return session.subject === "maths"
-      ? `${cur.question} = ${cur.answer}`
-      : `"${cur.word}"`;
+    if (session.subject !== "maths") return `"${cur.word}"`;
+    if (cur.shape) {
+      return cur.unit ? `${cur.answer} ${cur.unit}` : String(cur.answer);
+    }
+    return `${cur.question} = ${cur.answer}`;
   }
 
   answerForm.addEventListener("submit", (e) => {
