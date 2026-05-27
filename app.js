@@ -73,8 +73,8 @@
       const ty = Math.sin(angle) * speed * 0.6;
       const rot = (Math.random() * 900 - 450).toFixed(0) + "deg";
       const color = CONFETTI_COLORS[Math.floor(Math.random() * CONFETTI_COLORS.length)];
-      const duration = 1100 + Math.random() * 700;
-      const delay = Math.random() * 90;
+      const duration = 2200 + Math.random() * 1400;
+      const delay = Math.random() * 180;
       piece.style.left = originX + "px";
       piece.style.top = originY + "px";
       piece.style.background = color;
@@ -86,7 +86,7 @@
       container.appendChild(piece);
     }
     document.body.appendChild(container);
-    setTimeout(() => container.remove(), 2400);
+    setTimeout(() => container.remove(), 4800);
   }
 
   function celebrateFromMascot() {
