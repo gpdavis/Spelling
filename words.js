@@ -328,7 +328,7 @@ window.WORD_LISTS = {
       { word: "vapour",    sentence: "Steam is water vapour.",    emoji: "💨" },
       { word: "grey",      sentence: "The clouds turned grey.",   emoji: "☁️" },
       { word: "defence",   sentence: "Our defence kept them scoreless." },
-      { word: "offence",   sentence: "I meant no offence." }
+      { word: "offence",   sentence: "I meant no offence.", homophone: true },
     ],
     "Word endings (-tion, -ous, soft c/g)": [
       { word: "attention", sentence: "Pay attention in class." },
@@ -376,8 +376,8 @@ window.WORD_LISTS = {
     ],
     "Tricky letter patterns": [
       { word: "although",  sentence: "I went out, although it was raining." },
-      { word: "though",    sentence: "It looked easy, though it wasn't." },
-      { word: "through",   sentence: "We walked through the forest." },
+      { word: "though",    sentence: "It looked easy, though it wasn't.", homophone: true },
+      { word: "through",   sentence: "We walked through the forest.", homophone: true  },
       { word: "thought",   sentence: "I thought you were home." },
       { word: "brought",   sentence: "She brought a gift for me." },
       { word: "enough",    sentence: "Have you had enough to eat?" },

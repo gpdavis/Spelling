@@ -117,17 +117,22 @@
     resultsMascot.classList.add("animated");
     resultsMascot.style.backgroundImage = `url("Images/${mascotFor(level)}Animation.png")`;
     const cols = 6, rows = 3, total = cols * rows;
-    let frame = 0;
+    const skip = new Set([13, 14]);
+    let frame = -1;
+    function nextFrame() {
+      do { frame = (frame + 1) % total; } while (skip.has(frame));
+      return frame;
+    }
     function step() {
-      const col = frame % cols;
-      const row = Math.floor(frame / cols);
+      const f = nextFrame();
+      const col = f % cols;
+      const row = Math.floor(f / cols);
       const x = (col / (cols - 1)) * 100;
       const y = (row / (rows - 1)) * 100;
       resultsMascot.style.backgroundPosition = `${x}% ${y}%`;
-      frame = (frame + 1) % total;
     }
     step();
-    resultsAnimTimer = setInterval(step, 90);
+    resultsAnimTimer = setInterval(step, 220);
   }
 
   function setQuizMascot(variant) {
