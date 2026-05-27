@@ -1,0 +1,137 @@
+:root {
+  --bg: #f5f7fb;
+  --card: #ffffff;
+  --ink: #1f2937;
+  --muted: #6b7280;
+  --accent: #4f46e5;
+  --accent-ink: #ffffff;
+  --good: #16a34a;
+  --bad: #dc2626;
+  --border: #e5e7eb;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--ink);
+  min-height: 100vh;
+}
+
+#app {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 3rem;
+}
+
+header h1 {
+  font-size: 1.75rem;
+  margin: 0 0 1.25rem;
+  text-align: center;
+}
+
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1.25rem;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}
+
+.hidden { display: none; }
+
+label {
+  display: block;
+  margin: 0.75rem 0;
+  font-size: 0.95rem;
+  color: var(--muted);
+}
+
+input[type="text"], select {
+  display: block;
+  width: 100%;
+  margin-top: 0.35rem;
+  padding: 0.65rem 0.75rem;
+  font-size: 1.05rem;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ink);
+}
+
+#answer-input {
+  font-size: 1.5rem;
+  text-align: center;
+  letter-spacing: 0.05em;
+}
+
+button {
+  font: inherit;
+  padding: 0.65rem 1rem;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: #fff;
+  color: var(--ink);
+  cursor: pointer;
+}
+
+button:hover { background: #f3f4f6; }
+
+button.primary {
+  background: var(--accent);
+  color: var(--accent-ink);
+  border-color: var(--accent);
+}
+
+button.primary:hover { filter: brightness(1.05); }
+
+.word-controls {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin: 0.75rem 0 1rem;
+}
+
+.word-controls button { flex: 1 1 0; min-width: 12rem; }
+
+#answer-form {
+  display: flex;
+  gap: 0.5rem;
+  align-items: stretch;
+}
+
+#answer-form input { flex: 1; }
+
+#progress {
+  font-size: 0.9rem;
+  color: var(--muted);
+  margin-bottom: 0.75rem;
+}
+
+#feedback {
+  margin-top: 1rem;
+  min-height: 2rem;
+  font-size: 1.05rem;
+}
+
+#feedback.good { color: var(--good); }
+#feedback.bad  { color: var(--bad); }
+
+#score {
+  font-size: 1.25rem;
+  margin: 0.5rem 0 1rem;
+}
+
+#missed-list {
+  margin: 0 0 1rem;
+  padding-left: 1.25rem;
+  color: var(--muted);
+}
+
+.row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}

@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Spelling Practice</title>
+<link rel="stylesheet" href="style.css" />
+</head>
+<body>
+<main id="app">
+  <header>
+    <h1>Spelling Practice</h1>
+  </header>
+
+  <section id="setup" class="card">
+    <h2>Who's practicing?</h2>
+    <label>
+      Name
+      <input id="name-input" type="text" placeholder="Your name" autocomplete="off" />
+    </label>
+    <label>
+      Level
+      <select id="level-select"></select>
+    </label>
+    <label>
+      List
+      <select id="list-select"></select>
+    </label>
+    <button id="start-btn" class="primary">Start</button>
+  </section>
+
+  <section id="quiz" class="card hidden">
+    <div id="progress"></div>
+    <div class="word-controls">
+      <button id="say-word-btn">🔊 Say the word</button>
+      <button id="say-sentence-btn">💬 Use it in a sentence</button>
+    </div>
+    <form id="answer-form">
+      <input id="answer-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type the word here" />
+      <button type="submit" class="primary">Check</button>
+    </form>
+    <div id="feedback" aria-live="polite"></div>
+  </section>
+
+  <section id="results" class="card hidden">
+    <h2>All done!</h2>
+    <div id="score"></div>
+    <ul id="missed-list"></ul>
+    <div class="row">
+      <button id="retry-missed-btn">Retry missed words</button>
+      <button id="restart-btn" class="primary">New practice</button>
+    </div>
+  </section>
+</main>
+
+<script src="words.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
