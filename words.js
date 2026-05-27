@@ -4,261 +4,325 @@
 //   emoji      — picture shown above the word (leave off for abstract words)
 //   homophone  — set to true for words that sound like another (e.g. there/their/they're).
 //                The app will automatically play the sentence after saying the word.
+//
+// Levels and patterns follow the Australian Curriculum v9 (ACARA), NSW NESA
+// English K–10 (2022) and Sound Waves scope and sequence. Australian English
+// spellings are used throughout (colour, centre, mum, organise, travelled).
 window.WORD_LISTS = {
   "Kindergarten": {
     "CVC words": [
       { word: "cat", sentence: "The cat sat on the mat.",        emoji: "🐈" },
-      { word: "dog", sentence: "My dog likes to run.",            emoji: "🐕" },
-      { word: "sun", sentence: "The sun is bright today.",        emoji: "☀️" },
-      { word: "hat", sentence: "She wore a red hat.",             emoji: "🎩" },
-      { word: "pig", sentence: "The pig rolled in the mud.",      emoji: "🐷" },
-      { word: "bed", sentence: "I jumped on my bed.",             emoji: "🛏️" },
-      { word: "big", sentence: "That is a big truck.",            emoji: "🐘" },
-      { word: "top", sentence: "The book is on top.",             emoji: "⬆️" },
-      { word: "mum", sentence: "My mum read me a story.",         emoji: "👩" },
-      { word: "run", sentence: "We like to run fast.",            emoji: "🏃" }
+      { word: "mum", sentence: "My mum read me a story.",        emoji: "👩" },
+      { word: "dad", sentence: "Dad made my lunch.",             emoji: "👨" },
+      { word: "dog", sentence: "My dog likes to run.",           emoji: "🐕" },
+      { word: "sun", sentence: "The sun is bright today.",       emoji: "☀️" },
+      { word: "hat", sentence: "She wore a red hat.",            emoji: "🎩" },
+      { word: "pig", sentence: "The pig rolled in the mud.",     emoji: "🐷" },
+      { word: "bed", sentence: "I jumped on my bed.",            emoji: "🛏️" },
+      { word: "run", sentence: "We like to run fast.",           emoji: "🏃" },
+      { word: "top", sentence: "The book is on top.",            emoji: "⬆️" },
+      { word: "big", sentence: "That is a big truck.",           emoji: "🐘" },
+      { word: "log", sentence: "A frog sat on a log.",           emoji: "🪵" },
+      { word: "hop", sentence: "Watch the bunny hop.",           emoji: "🐰" },
+      { word: "net", sentence: "We caught a fish in a net." }
     ],
     "Sight words": [
-      { word: "the", sentence: "The boy ran fast." },
-      { word: "is",  sentence: "The sky is blue." },
-      { word: "in",  sentence: "Put it in the box." },
-      { word: "it",  sentence: "I can do it." },
-      { word: "on",  sentence: "Sit on the chair." },
-      { word: "am",  sentence: "I am five years old." },
-      { word: "me",  sentence: "Come with me." },
-      { word: "we",  sentence: "We are best friends." },
-      { word: "see", sentence: "I can see a bird.",               emoji: "👀" },
-      { word: "can", sentence: "Can you help me?" }
+      { word: "the",  sentence: "The boy ran fast." },
+      { word: "is",   sentence: "The sky is blue." },
+      { word: "in",   sentence: "Put it in the box." },
+      { word: "it",   sentence: "I can do it." },
+      { word: "on",   sentence: "Sit on the chair." },
+      { word: "am",   sentence: "I am five years old." },
+      { word: "me",   sentence: "Come with me." },
+      { word: "we",   sentence: "We are best friends." },
+      { word: "see",  sentence: "I can see a bird.",             emoji: "👀" },
+      { word: "can",  sentence: "Can you help me?" },
+      { word: "and",  sentence: "I like cats and dogs." },
+      { word: "to",   sentence: "Let's go to the park." },
+      { word: "said", sentence: "She said hello.",               emoji: "💬" },
+      { word: "you",  sentence: "You are my best friend." }
+    ],
+    "Common nouns": [
+      { word: "bus", sentence: "The bus is yellow.",             emoji: "🚌" },
+      { word: "fox", sentence: "The fox has a bushy tail.",      emoji: "🦊" },
+      { word: "cup", sentence: "I drank from my cup.",           emoji: "☕" },
+      { word: "hen", sentence: "The hen laid an egg.",           emoji: "🐔" },
+      { word: "bag", sentence: "Put it in your bag.",            emoji: "🎒" },
+      { word: "jam", sentence: "I like jam on toast.",           emoji: "🍓" },
+      { word: "web", sentence: "A spider made a web.",           emoji: "🕸️" },
+      { word: "fan", sentence: "The fan keeps me cool.",         emoji: "🌀" },
+      { word: "lip", sentence: "I bit my lip." },
+      { word: "mud", sentence: "The pig played in the mud." }
     ]
   },
 
   "Year 1": {
-    "Common words": [
-      { word: "that",  sentence: "I want that one." },
-      { word: "with",  sentence: "Come with me." },
-      { word: "this",  sentence: "This is my book." },
-      { word: "then",  sentence: "Eat dinner, then brush your teeth." },
-      { word: "like",  sentence: "I like ice cream.",             emoji: "❤️" },
-      { word: "look",  sentence: "Look at the rainbow.",          emoji: "👀" },
-      { word: "play",  sentence: "Let's play outside.",           emoji: "🎮" },
-      { word: "said",  sentence: "She said hello.",               emoji: "💬" },
-      { word: "was",   sentence: "He was very tired." },
-      { word: "went",  sentence: "We went to the park." }
+    "Digraphs (sh, ch, th, ng, ck)": [
+      { word: "ship", sentence: "The ship sailed away.",         emoji: "🚢" },
+      { word: "fish", sentence: "A fish swims in the pond.",     emoji: "🐟" },
+      { word: "chop", sentence: "I helped chop the carrots.",    emoji: "🥕" },
+      { word: "much", sentence: "Thank you very much." },
+      { word: "then", sentence: "I'll see you then." },
+      { word: "thin", sentence: "The ice was very thin." },
+      { word: "when", sentence: "When can we eat?" },
+      { word: "what", sentence: "What is your name?",            emoji: "❓" },
+      { word: "sing", sentence: "Birds sing in the morning.",    emoji: "🎵" },
+      { word: "ring", sentence: "She wore a gold ring.",         emoji: "💍" },
+      { word: "duck", sentence: "The duck splashed in the pond.", emoji: "🦆" },
+      { word: "sock", sentence: "I lost one sock.",              emoji: "🧦" }
     ],
-    "Digraphs (sh, ch, th)": [
-      { word: "ship",  sentence: "The ship sailed away.",         emoji: "🚢" },
-      { word: "fish",  sentence: "A fish swims in the pond.",     emoji: "🐟" },
-      { word: "chat",  sentence: "We had a long chat.",           emoji: "💬" },
-      { word: "much",  sentence: "Thank you very much." },
-      { word: "then",  sentence: "I'll see you then." },
-      { word: "thin",  sentence: "The ice was very thin." },
-      { word: "when",  sentence: "When can we eat?" },
-      { word: "what",  sentence: "What is your name?",            emoji: "❓" }
+    "Magic-e words": [
+      { word: "make", sentence: "Let's make a sandcastle.",      emoji: "🏖️" },
+      { word: "ride", sentence: "I love to ride my bike.",       emoji: "🚲" },
+      { word: "home", sentence: "We went home for dinner.",      emoji: "🏠" },
+      { word: "cute", sentence: "The puppy is so cute.",         emoji: "🐶" },
+      { word: "bake", sentence: "We will bake a cake.",          emoji: "🎂" },
+      { word: "kite", sentence: "Fly your kite in the wind.",    emoji: "🪁" },
+      { word: "bone", sentence: "The dog buried his bone.",      emoji: "🦴" },
+      { word: "tube", sentence: "Toothpaste comes in a tube." },
+      { word: "late", sentence: "Don't be late for school." },
+      { word: "time", sentence: "What time is it?",              emoji: "⏰" },
+      { word: "hope", sentence: "I hope it doesn't rain." },
+      { word: "mule", sentence: "The mule carried the load.",    emoji: "🫏" }
+    ],
+    "Consonant blends": [
+      { word: "stop", sentence: "Stop at the red light.",        emoji: "🛑" },
+      { word: "plan", sentence: "We made a plan together." },
+      { word: "jump", sentence: "Frogs love to jump.",           emoji: "🐸" },
+      { word: "hand", sentence: "Hold my hand.",                 emoji: "✋" },
+      { word: "sand", sentence: "We built castles in the sand.", emoji: "🏖️" },
+      { word: "frog", sentence: "A green frog hopped past.",     emoji: "🐸" },
+      { word: "drum", sentence: "He played the drum loudly.",    emoji: "🥁" },
+      { word: "swim", sentence: "Fish swim in the sea.",         emoji: "🏊" },
+      { word: "milk", sentence: "I drink milk every day.",       emoji: "🥛" },
+      { word: "lamp", sentence: "Turn on the lamp, please.",     emoji: "💡" },
+      { word: "nest", sentence: "Birds built a nest in the tree.", emoji: "🪺" },
+      { word: "flag", sentence: "The flag flew high.",           emoji: "🚩" }
     ]
   },
 
   "Year 2": {
-    "Common words": [
-      { word: "friend",   sentence: "My best friend came over.",     emoji: "👫" },
-      { word: "school",   sentence: "We learn at school.",           emoji: "🏫" },
-      { word: "water",    sentence: "I drank a glass of water.",     emoji: "💧" },
-      { word: "every",    sentence: "I read every night." },
-      { word: "again",    sentence: "Can we play that again?" },
-      { word: "their",    sentence: "The kids found their hats.",   homophone: true },
-      { word: "would",    sentence: "I would like a snack." },
-      { word: "could",    sentence: "Could you pass the salt?" },
-      { word: "should",   sentence: "We should be quiet here." },
-      { word: "where",    sentence: "Where did you go?" },
-      { word: "about",    sentence: "I read a book about dinosaurs.", emoji: "🦖" },
-      { word: "around",   sentence: "We walked around the lake." },
-      { word: "between",  sentence: "I sat between my two friends." },
-      { word: "together", sentence: "We can do it together.",        emoji: "🤝" },
-      { word: "today",    sentence: "Today is my birthday.",         emoji: "🎂" }
+    "Vowel teams (long vowels)": [
+      { word: "rain",  sentence: "The rain made puddles.",       emoji: "🌧️" },
+      { word: "train", sentence: "We took the train to the city.", emoji: "🚂" },
+      { word: "boat",  sentence: "Our boat sailed on the lake.", emoji: "⛵" },
+      { word: "road",  sentence: "The road was long and straight.", emoji: "🛣️" },
+      { word: "light", sentence: "Turn off the light, please.",  emoji: "💡" },
+      { word: "way",   sentence: "Show me the way home." },
+      { word: "play",  sentence: "We can play in the garden.",   emoji: "🎮" },
+      { word: "slow",  sentence: "Walk slow on the ice.",        emoji: "🐢" },
+      { word: "snow",  sentence: "Snow covered the hills.",      emoji: "❄️" },
+      { word: "sleep", sentence: "I need a good sleep.",         emoji: "😴" },
+      { word: "tree",  sentence: "The bird sat in a tree.",      emoji: "🌳" },
+      { word: "moon",  sentence: "The moon is full tonight.",    emoji: "🌕" }
     ],
-    "Word endings": [
-      { word: "jumping",  sentence: "The kids were jumping on the trampoline.", emoji: "🤸" },
-      { word: "ending",   sentence: "I love the ending of that story." },
-      { word: "splash",   sentence: "The duck made a big splash.",   emoji: "💦" },
-      { word: "after",    sentence: "We had cake after dinner.",     emoji: "🍰" },
-      { word: "before",   sentence: "Wash your hands before lunch.", emoji: "🧼" },
-      { word: "because",  sentence: "I'm happy because it's my birthday.", emoji: "🎂" },
-      { word: "smiled",   sentence: "She smiled at the baby.",       emoji: "😊" },
-      { word: "playing",  sentence: "The kids are playing tag.",     emoji: "🎮" },
-      { word: "watched",  sentence: "We watched a movie last night.", emoji: "📺" },
-      { word: "hopped",   sentence: "The bunny hopped through the garden.", emoji: "🐰" },
-      { word: "clapped",  sentence: "The audience clapped loudly.",  emoji: "👏" }
+    "R-controlled & diphthongs": [
+      { word: "park",  sentence: "We rode bikes in the park.",   emoji: "🏞️" },
+      { word: "fork",  sentence: "Use a fork to eat.",           emoji: "🍴" },
+      { word: "bird",  sentence: "A bird flew past my window.",  emoji: "🐦" },
+      { word: "girl",  sentence: "The girl waved hello.",        emoji: "👧" },
+      { word: "chair", sentence: "Sit on the chair.",            emoji: "🪑" },
+      { word: "near",  sentence: "The shop is near the school." },
+      { word: "boy",   sentence: "The boy kicked the ball.",     emoji: "👦" },
+      { word: "soil",  sentence: "Plants grow in the soil.",     emoji: "🌱" },
+      { word: "cloud", sentence: "A grey cloud crossed the sky.", emoji: "☁️" },
+      { word: "down",  sentence: "Climb down the ladder.",       emoji: "⬇️" },
+      { word: "brown", sentence: "She has brown hair.",          emoji: "🟫" },
+      { word: "joy",   sentence: "Her face was full of joy.",    emoji: "😊" }
     ],
-    "Blends (bl, cl, fl, sm, sn, sp, st, sw, tr)": [
-      { word: "black",   sentence: "The cat is black.",              emoji: "🐈‍⬛" },
-      { word: "clock",   sentence: "The clock is on the wall.",      emoji: "🕐" },
-      { word: "flag",    sentence: "The flag waved in the wind.",    emoji: "🚩" },
-      { word: "grass",   sentence: "The grass is green.",            emoji: "🌱" },
-      { word: "smile",   sentence: "Her smile is so bright.",        emoji: "😊" },
-      { word: "snake",   sentence: "The snake slithered through the grass.", emoji: "🐍" },
-      { word: "spider",  sentence: "A spider spun a web.",           emoji: "🕷️" },
-      { word: "stop",    sentence: "We had to stop at the red light.", emoji: "🛑" },
-      { word: "swim",    sentence: "Fish swim in the sea.",          emoji: "🏊" },
-      { word: "truck",   sentence: "A big truck drove past.",        emoji: "🚚" }
-    ],
-    "Magic e (silent e)": [
-      { word: "cake",    sentence: "We made a cake for her birthday.", emoji: "🍰" },
-      { word: "bike",    sentence: "I ride my bike to school.",      emoji: "🚲" },
-      { word: "rope",    sentence: "She jumped over the rope.",      emoji: "🪢" },
-      { word: "cube",    sentence: "An ice cube melted in the sun.", emoji: "🧊" },
-      { word: "time",    sentence: "What time is it?",               emoji: "⏰" },
-      { word: "home",    sentence: "Let's go home.",                 emoji: "🏠" },
-      { word: "name",    sentence: "What is your name?" },
-      { word: "plane",   sentence: "The plane landed safely.",       emoji: "✈️" },
-      { word: "whale",   sentence: "A blue whale swam by.",          emoji: "🐋" },
-      { word: "bone",    sentence: "The dog buried a bone.",         emoji: "🦴" }
+    "Silent letters & tricky patterns": [
+      { word: "knee",    sentence: "I scraped my knee on the path." },
+      { word: "write",   sentence: "Write your name at the top.", emoji: "✍️" },
+      { word: "lamb",    sentence: "A baby sheep is called a lamb.", emoji: "🐑" },
+      { word: "match",   sentence: "These shoes are a match.",   emoji: "👟" },
+      { word: "bridge",  sentence: "We crossed the bridge.",     emoji: "🌉" },
+      { word: "hopping", sentence: "The bunny was hopping along.", emoji: "🐰" },
+      { word: "baking",  sentence: "Grandma is baking biscuits.", emoji: "🍪" },
+      { word: "crying",  sentence: "The baby was crying loudly.", emoji: "😢" },
+      { word: "city",    sentence: "We visited the big city.",   emoji: "🏙️" },
+      { word: "cage",    sentence: "The parrot is in its cage.", emoji: "🦜" },
+      { word: "race",    sentence: "I won the running race.",    emoji: "🏃" },
+      { word: "fence",   sentence: "The dog jumped the fence." }
     ]
   },
 
   "Year 3": {
-    "Common words": [
-      { word: "people",   sentence: "Many people came to the show.",    emoji: "👥" },
-      { word: "almost",   sentence: "We're almost there." },
-      { word: "family",   sentence: "Our family went camping.",         emoji: "👨‍👩‍👧" },
-      { word: "always",   sentence: "She always smiles.",               emoji: "😊" },
-      { word: "money",    sentence: "I saved my money in a jar.",       emoji: "💰" },
-      { word: "animal",   sentence: "A dog is my favourite animal.",    emoji: "🐾" },
-      { word: "picture",  sentence: "I drew a picture of my house.",    emoji: "🖼️" },
-      { word: "special",  sentence: "Today is a special day.",          emoji: "⭐" },
-      { word: "morning",  sentence: "We eat breakfast in the morning.", emoji: "🌅" },
-      { word: "another",  sentence: "Can I have another biscuit?",      emoji: "🍪" }
+    "Prefixes & suffixes": [
+      { word: "unkind",    sentence: "It's unkind to tease others." },
+      { word: "replay",    sentence: "Let's replay the goal.",   emoji: "🔁" },
+      { word: "disagree",  sentence: "I disagree with that idea." },
+      { word: "mistake",   sentence: "Everyone makes a mistake sometimes." },
+      { word: "careful",   sentence: "Be careful crossing the road." },
+      { word: "hopeless",  sentence: "The wet match was hopeless." },
+      { word: "slowly",    sentence: "Walk slowly down the hill.", emoji: "🐢" },
+      { word: "kindness",  sentence: "Her kindness made me smile.", emoji: "💖" },
+      { word: "payment",   sentence: "We sent the payment yesterday.", emoji: "💰" },
+      { word: "taller",    sentence: "My brother is taller than me." },
+      { word: "smallest",  sentence: "I picked the smallest apple.", emoji: "🍎" },
+      { word: "happiest",  sentence: "This is the happiest day.", emoji: "😄" }
     ],
-    "Tricky endings": [
-      { word: "stopped",  sentence: "The car stopped at the lights.",   emoji: "🛑" },
-      { word: "running",  sentence: "The dog is running fast.",         emoji: "🏃" },
-      { word: "biggest",  sentence: "That's the biggest pumpkin I've seen.", emoji: "🎃" },
-      { word: "happily",  sentence: "The kids played happily.",         emoji: "😄" },
-      { word: "carries",  sentence: "He carries his bag to school.",    emoji: "🎒" },
-      { word: "watches",  sentence: "She watches the birds.",           emoji: "🐦" },
-      { word: "brushes",  sentence: "He brushes his teeth twice a day.", emoji: "🪥" },
-      { word: "babies",   sentence: "The babies were sleeping.",        emoji: "👶" }
+    "Common words": [
+      { word: "because", sentence: "I'm sleepy because it's late." },
+      { word: "friend",  sentence: "She is my best friend.",     emoji: "👫" },
+      { word: "before",  sentence: "Brush your teeth before bed." },
+      { word: "again",   sentence: "Let's try again." },
+      { word: "journey", sentence: "Our journey took two days." },
+      { word: "hurry",   sentence: "Hurry or we'll miss the bus.", emoji: "🏃" },
+      { word: "board",   sentence: "Write it on the board." },
+      { word: "cheer",   sentence: "We cheer for our team.",     emoji: "📣" },
+      { word: "around",  sentence: "We walked around the lake." },
+      { word: "every",   sentence: "Every kid got a turn." },
+      { word: "family",  sentence: "My family went to the beach.", emoji: "👨‍👩‍👧‍👦" },
+      { word: "people",  sentence: "Lots of people came to the show.", emoji: "👥" }
+    ],
+    "Homophones": [
+      { word: "their",   sentence: "Their car is blue.",                                homophone: true },
+      { word: "there",   sentence: "Put it over there.",                                homophone: true },
+      { word: "they're", sentence: "They're coming to my party.",                       homophone: true },
+      { word: "hear",    sentence: "Did you hear that noise?",            emoji: "👂",  homophone: true },
+      { word: "here",    sentence: "Come over here, please.",                           homophone: true },
+      { word: "bear",    sentence: "A brown bear lives in the cave.",     emoji: "🐻",  homophone: true },
+      { word: "bare",    sentence: "His feet were bare on the sand.",     emoji: "🦶",  homophone: true },
+      { word: "pair",    sentence: "I bought a new pair of shoes.",       emoji: "👟",  homophone: true },
+      { word: "pear",    sentence: "She ate a juicy green pear.",         emoji: "🍐",  homophone: true },
+      { word: "knight",  sentence: "The knight rode a strong horse.",     emoji: "🐴",  homophone: true },
+      { word: "night",   sentence: "Stars shine in the night sky.",       emoji: "🌙",  homophone: true },
+      { word: "won",     sentence: "Our team won the game.",              emoji: "🏆",  homophone: true }
     ]
   },
 
   "Year 4": {
-    "Common words": [
-      { word: "through",     sentence: "We walked through the forest.",       emoji: "🌲", homophone: true },
-      { word: "thought",     sentence: "I thought I heard a noise.",          emoji: "💭" },
-      { word: "enough",      sentence: "We have enough food for everyone." },
-      { word: "library",     sentence: "I borrowed three books from the library.", emoji: "📚" },
-      { word: "decided",     sentence: "We decided to go swimming.",          emoji: "🏊" },
-      { word: "suddenly",    sentence: "Suddenly, the lights went out.",      emoji: "⚡" },
-      { word: "perhaps",     sentence: "Perhaps we can try again tomorrow." },
-      { word: "weather",     sentence: "The weather is sunny today.",         emoji: "🌤️",  homophone: true},
-      { word: "favourite",   sentence: "Chocolate is my favourite flavour.",  emoji: "🍫" },
-      { word: "important",   sentence: "It's important to be kind.",          emoji: "❗" },
-      { word: "answer",      sentence: "I knew the answer straight away." },
-      { word: "question",    sentence: "Can I ask a question?",               emoji: "❓" },
-      { word: "remember",    sentence: "I will remember to feed the cat.",    emoji: "🧠" },
-      { word: "everyone",    sentence: "Everyone is invited to the party.",   emoji: "🎉" },
-      { word: "interesting", sentence: "That book was very interesting.",     emoji: "📖" }
+    "Plural rules": [
+      { word: "babies",   sentence: "The babies are asleep.",       emoji: "👶" },
+      { word: "leaves",   sentence: "Leaves fall in autumn.",       emoji: "🍂" },
+      { word: "knives",   sentence: "Be careful with sharp knives.", emoji: "🔪" },
+      { word: "foxes",    sentence: "Two foxes ran across the road.", emoji: "🦊" },
+      { word: "dishes",   sentence: "I helped wash the dishes.",    emoji: "🍽️" },
+      { word: "churches", sentence: "Old churches have tall towers.", emoji: "⛪" },
+      { word: "ladies",   sentence: "The ladies sat in the garden." },
+      { word: "parties",  sentence: "Birthday parties are fun.",    emoji: "🎉" },
+      { word: "stories",  sentence: "Grandpa tells the best stories.", emoji: "📖" },
+      { word: "halves",   sentence: "Cut the apple into halves.",   emoji: "🍎" },
+      { word: "wolves",   sentence: "Wolves howl at the moon.",     emoji: "🐺" },
+      { word: "shelves",  sentence: "Books fill the shelves.",      emoji: "📚" }
     ],
-    "Often confused": [
-      { word: "there",   sentence: "Put the box over there.",            homophone: true },
-      { word: "their",   sentence: "The kids took their lunches.",       homophone: true },
-      { word: "they're", sentence: "They're going to the beach.",        emoji: "🏖️", homophone: true },
-      { word: "your",    sentence: "Is this your hat?",                  emoji: "🎩", homophone: true },
-      { word: "you're",  sentence: "You're my best friend.",             homophone: true },
-      { word: "its",     sentence: "The dog wagged its tail.",           emoji: "🐕", homophone: true },
-      { word: "it's",    sentence: "It's a beautiful day.",              emoji: "☀️", homophone: true }
+    "Australian spellings": [
+      { word: "centre",     sentence: "Meet me at the shopping centre." },
+      { word: "colour",     sentence: "Pick your favourite colour.",    emoji: "🎨" },
+      { word: "favour",     sentence: "Could you do me a favour?" },
+      { word: "harbour",    sentence: "Boats rest in the harbour.",     emoji: "⛵" },
+      { word: "neighbour",  sentence: "My neighbour has a cat.",        emoji: "🏘️" },
+      { word: "theatre",    sentence: "We saw a play at the theatre.",  emoji: "🎭" },
+      { word: "metre",      sentence: "The rope is one metre long." },
+      { word: "behaviour",  sentence: "Good behaviour is rewarded." },
+      { word: "honour",     sentence: "It's an honour to meet you." },
+      { word: "labour",     sentence: "Building the wall was hard labour." },
+      { word: "humour",     sentence: "She has a great sense of humour.", emoji: "😄" },
+      { word: "flavour",    sentence: "Strawberry is my favourite flavour.", emoji: "🍓" }
     ],
-    "Homophones": [
-      { word: "to",     sentence: "Please give the book to me.",         homophone: true },
-      { word: "too",    sentence: "It's too hot today.",                 emoji: "🥵", homophone: true },
-      { word: "two",    sentence: "I have two pet cats.",                emoji: "✌️", homophone: true },
-      { word: "here",   sentence: "Come here, please.",                  emoji: "📍", homophone: true },
-      { word: "hear",   sentence: "Can you hear the music?",             emoji: "👂", homophone: true },
-      { word: "know",   sentence: "I know the answer.",                  homophone: true },
-      { word: "no",     sentence: "There are no biscuits left.",         emoji: "❌", homophone: true },
-      { word: "blue",   sentence: "The sky is blue today.",              emoji: "🔵", homophone: true },
-      { word: "blew",   sentence: "The wind blew the leaves away.",      emoji: "💨", homophone: true },
-      { word: "week",   sentence: "We have one more week of school.",    emoji: "📅", homophone: true }
-    ],
-    "Prefixes (un-, re-, dis-, pre-)": [
-      { word: "unhappy",   sentence: "She felt unhappy after losing.",    emoji: "😢" },
-      { word: "unkind",    sentence: "It is unkind to say mean things." },
-      { word: "redo",      sentence: "I had to redo my homework.",        emoji: "↩️" },
-      { word: "replay",    sentence: "Let's replay the last level.",      emoji: "🔁" },
-      { word: "return",    sentence: "I will return the book to the library.", emoji: "📚" },
-      { word: "dislike",   sentence: "I dislike olives.",                 emoji: "👎" },
-      { word: "disagree",  sentence: "We sometimes disagree about TV shows." },
-      { word: "preview",   sentence: "We watched a preview of the movie.", emoji: "👁️" },
-      { word: "prepare",   sentence: "Help me prepare dinner.",           emoji: "👨‍🍳" },
-      { word: "mistake",   sentence: "Everyone makes a mistake sometimes.", emoji: "❌" }
-    ],
-    "Suffixes (-tion, -ness, -ful, -less, -ment)": [
-      { word: "action",     sentence: "The action in the movie was exciting." },
-      { word: "station",    sentence: "We waited at the train station.",  emoji: "🚉" },
-      { word: "attention",  sentence: "Please pay attention in class." },
-      { word: "kindness",   sentence: "Show kindness to your friends.",   emoji: "💗" },
-      { word: "happiness",  sentence: "Puppies bring me happiness.",      emoji: "😄" },
-      { word: "helpful",    sentence: "Be helpful around the house.",     emoji: "🤝" },
-      { word: "careful",    sentence: "Please be careful crossing the road." },
-      { word: "careless",   sentence: "Don't be careless with your toys." },
-      { word: "excitement", sentence: "The excitement before the trip was huge.", emoji: "🎉" },
-      { word: "movement",   sentence: "I saw a small movement in the bushes." }
-    ],
-    "Silent letters": [
-      { word: "knight",  sentence: "The brave knight rode a horse.",    emoji: "🛡️", homophone: true },
-      { word: "knee",    sentence: "I scraped my knee on the path.",    emoji: "🦵" },
-      { word: "knot",    sentence: "Can you tie a knot in this rope?",  homophone: true },
-      { word: "write",   sentence: "I will write a letter to grandma.", emoji: "✍️", homophone: true },
-      { word: "thumb",   sentence: "Be careful not to hit your thumb.", emoji: "👍" },
-      { word: "climb",   sentence: "We can climb the tree in the park.", emoji: "🧗" },
-      { word: "lamb",    sentence: "The lamb followed its mother.",     emoji: "🐑" },
-      { word: "listen",  sentence: "Please listen carefully.",          emoji: "👂" }
+    "Word endings (-tion, -ous, soft c/g)": [
+      { word: "attention", sentence: "Pay attention in class." },
+      { word: "station",   sentence: "We waited at the station.",   emoji: "🚉" },
+      { word: "action",    sentence: "Quick action saved the day." },
+      { word: "division",  sentence: "We learned division in maths.", emoji: "➗" },
+      { word: "decision",  sentence: "It was a tough decision." },
+      { word: "famous",    sentence: "She is a famous singer.",     emoji: "🎤" },
+      { word: "nervous",   sentence: "I felt nervous before the test.", emoji: "😰" },
+      { word: "jealous",   sentence: "Don't be jealous of others." },
+      { word: "gentle",    sentence: "Be gentle with the kitten.",  emoji: "🐱" },
+      { word: "giant",     sentence: "The giant lived on a mountain.", emoji: "👹" },
+      { word: "magic",     sentence: "The magic show was amazing.", emoji: "✨" },
+      { word: "village",   sentence: "A tiny village in the hills.", emoji: "🏘️" }
     ]
   },
 
   "Year 5": {
-    "Longer words": [
-      { word: "different",  sentence: "Every snowflake is different.",  emoji: "❄️" },
-      { word: "beautiful",  sentence: "That is a beautiful painting.",  emoji: "🌸" },
-      { word: "knowledge",  sentence: "Reading builds your knowledge.", emoji: "📖" },
-      { word: "neighbour",  sentence: "Our neighbour has a friendly dog.", emoji: "🏘️" },
-      { word: "probably",   sentence: "It will probably rain tomorrow.", emoji: "🌧️" },
-      { word: "vacation",   sentence: "Our vacation was so much fun.",   emoji: "🏖️" },
-      { word: "adventure",  sentence: "Camping is a great adventure.",   emoji: "🗺️" },
-      { word: "separate",   sentence: "Please separate the laundry by colour.", emoji: "🧺" },
-      { word: "tomorrow",   sentence: "We can finish it tomorrow.",      emoji: "📅" },
-      { word: "available",  sentence: "Tickets are still available.",    emoji: "🎟️" }
+    "Greek & Latin roots": [
+      { word: "telephone",   sentence: "Answer the telephone, please.", emoji: "📞" },
+      { word: "photograph",  sentence: "Take a photograph of the sunset.", emoji: "📷" },
+      { word: "autograph",   sentence: "I got the player's autograph.", emoji: "✍️" },
+      { word: "transport",   sentence: "Buses are a kind of transport.", emoji: "🚌" },
+      { word: "biology",     sentence: "We studied frogs in biology.", emoji: "🐸" },
+      { word: "microscope",  sentence: "Use the microscope to see tiny things.", emoji: "🔬" },
+      { word: "telescope",   sentence: "Through the telescope we saw Mars.", emoji: "🔭" },
+      { word: "geography",   sentence: "Geography is about countries and maps.", emoji: "🗺️" },
+      { word: "paragraph",   sentence: "Start a new paragraph here." },
+      { word: "dictionary",  sentence: "Look it up in the dictionary.", emoji: "📖" },
+      { word: "aquarium",    sentence: "We visited the aquarium.",  emoji: "🐠" },
+      { word: "popular",     sentence: "That song is very popular.", emoji: "🎵" }
     ],
-    "Often misspelled": [
-      { word: "received",   sentence: "I received a letter in the mail.", emoji: "✉️" },
-      { word: "believe",    sentence: "I believe you can do it." },
-      { word: "weird",      sentence: "That sound was really weird.",    emoji: "👻" },
-      { word: "necessary",  sentence: "A pencil is necessary for class.", emoji: "✏️" },
-      { word: "definitely", sentence: "I will definitely come to your party.", emoji: "🎉" },
-      { word: "embarrass",  sentence: "Don't embarrass me in front of my friends.", emoji: "😳" }
+    "Tricky letter patterns": [
+      { word: "although",  sentence: "I went out, although it was raining." },
+      { word: "enough",    sentence: "Have you had enough to eat?" },
+      { word: "taught",    sentence: "My nan taught me to knit.",   emoji: "🧶" },
+      { word: "character", sentence: "Each book has a hero character." },
+      { word: "technique", sentence: "She uses a clever technique." },
+      { word: "machine",   sentence: "The washing machine is broken.", emoji: "🧺" },
+      { word: "chemist",   sentence: "Pick up the medicine from the chemist.", emoji: "💊" },
+      { word: "chorus",    sentence: "Sing along to the chorus.",   emoji: "🎶" },
+      { word: "plough",    sentence: "The farmer used a plough.",   emoji: "🚜" },
+      { word: "daughter",  sentence: "His daughter plays football.", emoji: "⚽" },
+      { word: "though",    sentence: "It looked easy, though it wasn't." },
+      { word: "thought",   sentence: "I thought you were home." }
+    ],
+    "Suffix patterns (-able, -ible, -ous)": [
+      { word: "valuable",     sentence: "This necklace is very valuable.", emoji: "💎" },
+      { word: "sensible",     sentence: "Wear sensible shoes for hiking.", emoji: "🥾" },
+      { word: "dangerous",    sentence: "Crossing without looking is dangerous.", emoji: "⚠️" },
+      { word: "courageous",   sentence: "It was a courageous rescue." },
+      { word: "government",   sentence: "The government made a new law.", emoji: "🏛️" },
+      { word: "friendship",   sentence: "Our friendship is strong.", emoji: "🤝" },
+      { word: "neighbourhood",sentence: "Kids play in our neighbourhood.", emoji: "🏘️" },
+      { word: "freedom",      sentence: "Birds enjoy freedom in the sky.", emoji: "🕊️" },
+      { word: "scientist",    sentence: "A scientist studies nature.", emoji: "🔬" },
+      { word: "electrician",  sentence: "The electrician fixed the wires.", emoji: "💡" },
+      { word: "musician",     sentence: "A musician practises every day.", emoji: "🎵" },
+      { word: "magician",     sentence: "The magician pulled a rabbit from a hat.", emoji: "🎩" }
     ]
   },
 
   "Year 6": {
-    "Advanced words": [
-      { word: "rhythm",        sentence: "The drummer kept a steady rhythm.", emoji: "🥁" },
-      { word: "conscience",    sentence: "Her conscience told her to apologise." },
-      { word: "accommodate",   sentence: "The hotel can accommodate fifty guests.", emoji: "🏨" },
-      { word: "government",    sentence: "The government made a new law.",    emoji: "🏛️" },
-      { word: "occurrence",    sentence: "Snow is a rare occurrence here.",   emoji: "❄️" },
-      { word: "privilege",     sentence: "It's a privilege to meet you." },
-      { word: "recommend",     sentence: "I recommend the chocolate cake.",   emoji: "👍" },
-      { word: "restaurant",    sentence: "We ate at a new restaurant.",       emoji: "🍽️" },
-      { word: "mischievous",   sentence: "The mischievous puppy chewed my shoe.", emoji: "😈" },
-      { word: "conscientious", sentence: "She is a conscientious student.",   emoji: "🎓" }
+    "Greek & Latin roots": [
+      { word: "audible",        sentence: "Her whisper was barely audible.", emoji: "👂" },
+      { word: "visible",        sentence: "Stars become visible at night.", emoji: "⭐" },
+      { word: "describe",       sentence: "Describe what you saw at the show." },
+      { word: "structure",      sentence: "The bridge has a strong structure.", emoji: "🌉" },
+      { word: "spectator",      sentence: "Each spectator cheered loudly." },
+      { word: "hydration",      sentence: "Drink water for good hydration.", emoji: "💧" },
+      { word: "thermometer",    sentence: "Check the thermometer for the temperature.", emoji: "🌡️" },
+      { word: "chronological",  sentence: "Put the events in chronological order.", emoji: "⏳" },
+      { word: "autobiography",  sentence: "She wrote her autobiography.", emoji: "📖" },
+      { word: "biography",      sentence: "A biography tells a person's life story." },
+      { word: "democracy",      sentence: "Australia is a democracy.",  emoji: "🗳️" },
+      { word: "philosophy",     sentence: "Philosophy asks big questions." }
     ],
-    "Tricky spellings": [
-      { word: "queue",         sentence: "We waited in a long queue.",        emoji: "🚶‍♂️🚶‍♀️", homophone: true },
-      { word: "vacuum",        sentence: "I need to vacuum the carpet.",      emoji: "🧹" },
-      { word: "rhyme",         sentence: "Can you think of a word that rhymes with cat?", emoji: "🎵" },
-      { word: "lieutenant",    sentence: "The lieutenant gave the order.",    emoji: "🎖️" },
-      { word: "ancient",       sentence: "We studied ancient Egypt at school.", emoji: "🏛️" },
-      { word: "guarantee",     sentence: "I guarantee you'll love this book.", emoji: "📕" },
-      { word: "exaggerate",    sentence: "Don't exaggerate — it wasn't that bad." },
-      { word: "parliament",    sentence: "The new law passed through parliament.", emoji: "🏛️" }
+    "Word endings (-ance, -ence, -cian)": [
+      { word: "possession",  sentence: "She kept her grandma's possession safe." },
+      { word: "ambulance",   sentence: "The ambulance arrived quickly.", emoji: "🚑" },
+      { word: "audience",    sentence: "The audience clapped loudly.", emoji: "👏" },
+      { word: "important",   sentence: "It's important to be honest." },
+      { word: "different",   sentence: "Everyone is different and special." },
+      { word: "independent", sentence: "She is independent and brave." },
+      { word: "confidence",  sentence: "He spoke with great confidence." },
+      { word: "intelligence",sentence: "Dolphins show high intelligence.", emoji: "🐬" },
+      { word: "experience",  sentence: "Camping was a new experience.", emoji: "⛺" },
+      { word: "patience",    sentence: "Fishing takes patience.",      emoji: "🎣" },
+      { word: "existence",   sentence: "We are grateful for our existence." },
+      { word: "difference",  sentence: "Spot the difference in the picture." }
+    ],
+    "Australian spellings": [
+      { word: "organise",   sentence: "Let's organise our notes." },
+      { word: "recognise",  sentence: "Do you recognise this song?", emoji: "🎵" },
+      { word: "realise",    sentence: "I didn't realise it was so late." },
+      { word: "criticise",  sentence: "Try not to criticise without thinking." },
+      { word: "travelled",  sentence: "We travelled across Australia.", emoji: "🚗" },
+      { word: "cancelled",  sentence: "The picnic was cancelled due to rain." },
+      { word: "modelled",   sentence: "She modelled the new uniform." },
+      { word: "jewellery",  sentence: "Mum keeps her jewellery in a box.", emoji: "💍" },
+      { word: "programme",  sentence: "Watch your favourite TV programme.", emoji: "📺" },
+      { word: "manoeuvre",  sentence: "The pilot did a tricky manoeuvre.", emoji: "✈️" },
+      { word: "favourite",  sentence: "Blue is my favourite colour." },
+      { word: "believe",    sentence: "I believe in you." }
     ]
   }
 };
