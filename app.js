@@ -5,9 +5,12 @@
   const quiz         = $("quiz");
   const results      = $("results");
   const history      = $("history");
+  const setupHeading = $("setup-heading");
+  const setupFields  = $("setup-fields");
+  const greeting     = $("greeting");
+  const changeBtn    = $("change-settings-btn");
   const nameInput    = $("name-input");
   const levelSelect  = $("level-select");
-  const listSelect   = $("list-select");
   const startBtn     = $("start-btn");
   const historyBtn   = $("history-btn");
   const wordEmoji    = $("word-emoji");
@@ -27,10 +30,13 @@
   const backHistoryBtn  = $("back-from-history-btn");
 
   const HISTORY_KEY = "spelling.history";
+  const NAME_KEY    = "spelling.name";
+  const LEVEL_KEY   = "spelling.level";
+  const WORDS_PER_SESSION = 20;
 
   const lists = window.WORD_LISTS || {};
 
-  let session = null; // { words: [...], i: 0, correct: 0, missed: [], name: "" }
+  let session = null;
 
   // ---- setup screen ----
 
@@ -42,46 +48,84 @@
       opt.textContent = lvl;
       levelSelect.appendChild(opt);
     });
-    populateListsForLevel();
+    const savedLevel = localStorage.getItem(LEVEL_KEY);
+    if (savedLevel && lists[savedLevel]) {
+      levelSelect.value = savedLevel;
+    }
   }
 
-  function populateListsForLevel() {
-    listSelect.innerHTML = "";
-    const lvl = levelSelect.value;
-    const subs = lists[lvl] || {};
-    Object.keys(subs).forEach((listName) => {
-      const opt = document.createElement("option");
-      opt.value = listName;
-      opt.textContent = listName;
-      listSelect.appendChild(opt);
-    });
+  function countWordsInLevel(level) {
+    const subs = lists[level] || {};
+    return Object.values(subs).reduce((sum, arr) => sum + arr.length, 0);
   }
 
-  levelSelect.addEventListener("change", populateListsForLevel);
+  function applySetupMode() {
+    const savedName  = localStorage.getItem(NAME_KEY)  || "";
+    const savedLevel = localStorage.getItem(LEVEL_KEY) || "";
+    if (savedName && savedLevel && lists[savedLevel]) {
+      collapseSetup(savedName, savedLevel);
+    } else {
+      expandSetup();
+    }
+  }
 
-  // Remember name across sessions.
-  nameInput.value = localStorage.getItem("spelling.name") || "";
+  function collapseSetup(name, level) {
+    nameInput.value = name;
+    levelSelect.value = level;
+    setupHeading.classList.add("hidden");
+    setupFields.classList.add("hidden");
+    greeting.classList.remove("hidden");
+    const count = Math.min(WORDS_PER_SESSION, countWordsInLevel(level));
+    greeting.querySelector(".name").textContent = `Hi ${name}!`;
+    greeting.querySelector(".meta").textContent = `${level} · ${count} random words`;
+    changeBtn.classList.remove("hidden");
+    startBtn.textContent = "Start practice";
+  }
+
+  function expandSetup() {
+    setupHeading.classList.remove("hidden");
+    setupFields.classList.remove("hidden");
+    greeting.classList.add("hidden");
+    changeBtn.classList.add("hidden");
+    startBtn.textContent = "Start";
+  }
+
+  nameInput.value = localStorage.getItem(NAME_KEY) || "";
   nameInput.addEventListener("input", () => {
-    localStorage.setItem("spelling.name", nameInput.value.trim());
+    localStorage.setItem(NAME_KEY, nameInput.value.trim());
   });
+
+  changeBtn.addEventListener("click", expandSetup);
 
   startBtn.addEventListener("click", () => {
-    const lvl  = levelSelect.value;
-    const name = listSelect.value;
-    const wordList = (lists[lvl] && lists[lvl][name]) || [];
-    if (!wordList.length) return;
-    startSession(shuffle(wordList.slice()));
+    const name  = nameInput.value.trim();
+    const level = levelSelect.value;
+    if (!name) { nameInput.focus(); return; }
+    if (!level || !lists[level]) return;
+    localStorage.setItem(NAME_KEY, name);
+    localStorage.setItem(LEVEL_KEY, level);
+    const words = buildRandomSession(level);
+    if (!words.length) return;
+    startSession(words, level);
   });
+
+  function buildRandomSession(level) {
+    const subs = lists[level] || {};
+    const all = [];
+    Object.values(subs).forEach((arr) => arr.forEach((w) => all.push(w)));
+    return shuffle(all).slice(0, Math.min(WORDS_PER_SESSION, all.length));
+  }
 
   // ---- quiz ----
 
-  function startSession(words) {
+  function startSession(words, level) {
     session = {
       words,
       i: 0,
       correct: 0,
       missed: [],
       name: nameInput.value.trim() || "friend",
+      level: level || levelSelect.value,
     };
     setup.classList.add("hidden");
     results.classList.add("hidden");
@@ -162,15 +206,14 @@
     const entry = {
       ts: Date.now(),
       name: session.name,
-      level: levelSelect.value,
-      list: listSelect.value,
+      level: session.level,
+      list: "",
       total: session.words.length,
       correct: session.correct,
       missed: session.missed.map((w) => w.word),
     };
     const all = loadHistory();
     all.push(entry);
-    // Keep newest 500 entries.
     const trimmed = all.slice(-500);
     localStorage.setItem(HISTORY_KEY, JSON.stringify(trimmed));
   }
@@ -186,12 +229,13 @@
 
   retryBtn.addEventListener("click", () => {
     if (!session.missed.length) return;
-    startSession(shuffle(session.missed.slice()));
+    startSession(shuffle(session.missed.slice()), session.level);
   });
 
   restartBtn.addEventListener("click", () => {
     results.classList.add("hidden");
     setup.classList.remove("hidden");
+    applySetupMode();
   });
 
   // ---- history view ----
@@ -205,6 +249,7 @@
   backHistoryBtn.addEventListener("click", () => {
     history.classList.add("hidden");
     setup.classList.remove("hidden");
+    applySetupMode();
   });
 
   historyFilter.addEventListener("change", renderHistory);
@@ -262,11 +307,12 @@
     top.className = "entry-top";
 
     const left = document.createElement("div");
+    const metaText = e.list ? `${e.level} › ${e.list}` : e.level;
     left.innerHTML =
       `<div><span class="entry-name"></span> — <span class="entry-meta"></span></div>` +
       `<div class="entry-meta when"></div>`;
     left.querySelector(".entry-name").textContent = e.name;
-    left.querySelector(".entry-meta").textContent = `${e.level} › ${e.list}`;
+    left.querySelector(".entry-meta").textContent = metaText;
     left.querySelector(".when").textContent = formatWhen(e.ts);
 
     const score = document.createElement("div");
@@ -330,6 +376,17 @@
     return n;
   };
 
+  // Hidden helper for testing — also clears the saved name and level so the
+  // setup screen shows again on next load.
+  window.resetSpellingApp = function () {
+    localStorage.removeItem(NAME_KEY);
+    localStorage.removeItem(LEVEL_KEY);
+    nameInput.value = "";
+    applySetupMode();
+    console.log("Cleared saved name and level. Refresh to see setup screen.");
+  };
+
   // boot
   populateLevels();
+  applySetupMode();
 })();

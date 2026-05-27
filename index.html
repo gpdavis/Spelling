@@ -13,21 +13,24 @@
   </header>
 
   <section id="setup" class="card">
-    <h2>Who's practicing?</h2>
-    <label>
-      Name
-      <input id="name-input" type="text" placeholder="Your name" autocomplete="off" />
-    </label>
-    <label>
-      Level
-      <select id="level-select"></select>
-    </label>
-    <label>
-      List
-      <select id="list-select"></select>
-    </label>
+    <h2 id="setup-heading">Who's practicing?</h2>
+    <div id="greeting" class="hidden">
+      <span class="name"></span>
+      <span class="meta"></span>
+    </div>
+    <div id="setup-fields">
+      <label>
+        Name
+        <input id="name-input" type="text" placeholder="Your name" autocomplete="off" />
+      </label>
+      <label>
+        Level
+        <select id="level-select"></select>
+      </label>
+    </div>
     <div class="row">
       <button id="start-btn" class="primary">Start</button>
+      <button id="change-settings-btn" class="hidden">Change</button>
       <button id="history-btn">View history</button>
     </div>
   </section>

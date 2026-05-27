@@ -87,6 +87,24 @@ button.primary {
 
 button.primary:hover { filter: brightness(1.05); }
 
+#greeting {
+  text-align: center;
+  margin: 0.5rem 0 1.25rem;
+}
+
+#greeting .name {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+#greeting .meta {
+  display: block;
+  font-size: 0.95rem;
+  color: var(--muted);
+  margin-top: 0.25rem;
+}
+
 .word-emoji {
   font-size: 5rem;
   line-height: 1;
