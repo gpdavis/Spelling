@@ -141,14 +141,14 @@ window.WORD_LISTS = {
 
   "Year 4": {
     "Common words": [
-      { word: "through",     sentence: "We walked through the forest.",       emoji: "🌲" },
+      { word: "through",     sentence: "We walked through the forest.",       emoji: "🌲", homophone: true },
       { word: "thought",     sentence: "I thought I heard a noise.",          emoji: "💭" },
       { word: "enough",      sentence: "We have enough food for everyone." },
       { word: "library",     sentence: "I borrowed three books from the library.", emoji: "📚" },
       { word: "decided",     sentence: "We decided to go swimming.",          emoji: "🏊" },
       { word: "suddenly",    sentence: "Suddenly, the lights went out.",      emoji: "⚡" },
       { word: "perhaps",     sentence: "Perhaps we can try again tomorrow." },
-      { word: "weather",     sentence: "The weather is sunny today.",         emoji: "🌤️" },
+      { word: "weather",     sentence: "The weather is sunny today.",         emoji: "🌤️",  homophone: true},
       { word: "favourite",   sentence: "Chocolate is my favourite flavour.",  emoji: "🍫" },
       { word: "important",   sentence: "It's important to be kind.",          emoji: "❗" },
       { word: "answer",      sentence: "I knew the answer straight away." },
