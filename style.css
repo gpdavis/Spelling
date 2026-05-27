@@ -235,6 +235,9 @@ button.primary:hover { filter: brightness(1.1); }
   image-rendering: -webkit-optimize-contrast;
   user-select: none;
   -webkit-user-drag: none;
+  background: #000;
+  border-radius: 12px;
+  box-shadow: 0 0 90px 24px #000;
 }
 
 .home-mascots {

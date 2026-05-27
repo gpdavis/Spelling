@@ -194,7 +194,8 @@
     const guess = answerInput.value.trim().toLowerCase();
     if (!guess) return;
     const target = current().word.toLowerCase();
-    if (guess === target) {
+    const wasCorrect = guess === target;
+    if (wasCorrect) {
       session.correct += 1;
       feedback.textContent = "✅ Correct!";
       feedback.className = "good";
@@ -207,8 +208,9 @@
     }
     answerInput.value = "";
     session.i += 1;
+    const delay = wasCorrect ? 900 : 8000;
     if (session.i >= session.words.length) {
-      setTimeout(showResults, 900);
+      setTimeout(showResults, delay);
     } else {
       setTimeout(() => {
         feedback.textContent = "";
@@ -216,7 +218,7 @@
         setQuizMascot("Standard");
         showCurrent();
         answerInput.focus();
-      }, 900);
+      }, delay);
     }
   });
 
