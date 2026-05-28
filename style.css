@@ -350,7 +350,13 @@ button.primary:hover { filter: brightness(1.1); }
 .home-mascots .mascot {
   width: 45%;
   max-width: 200px;
-  height: auto;
+  aspect-ratio: 1;
+}
+
+.home-mascot-anim {
+  background-repeat: no-repeat;
+  background-size: 600% 300%;
+  background-position: 0% 0%;
 }
 
 .mascot-stage {
@@ -361,7 +367,10 @@ button.primary:hover { filter: brightness(1.1); }
 
 #quiz-mascot {
   width: 140px;
-  height: auto;
+  height: 140px;
+  background-repeat: no-repeat;
+  background-size: 600% 300%;
+  background-position: 0% 0%;
   transition: transform 200ms ease;
 }
 

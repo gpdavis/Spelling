@@ -68,8 +68,8 @@
     return MASCOT_BY_LEVEL[level] || "Monty";
   }
 
-  function mascotSrc(level, variant) {
-    return `Images/${mascotFor(level)}_${variant}.png`;
+  function mascotAnimSrc(level) {
+    return `Images/${mascotFor(level)}Animation.png`;
   }
 
   const CONFETTI_COLORS = ["#fbbf24", "#34d399", "#60a5fa", "#f472b6", "#a78bfa", "#fb7185", "#facc15", "#22d3ee"];
@@ -110,6 +110,27 @@
     launchConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2);
   }
 
+  (function initHomeMascots() {
+    const els = document.querySelectorAll(".home-mascot-anim");
+    const cols = 6, rows = 3, total = cols * rows;
+    const skip = new Set([13, 14]);
+    els.forEach((el) => {
+      const name = el.dataset.mascot;
+      el.style.backgroundImage = `url("Images/${name}Animation.png")`;
+      let frame = -1;
+      function step() {
+        do { frame = (frame + 1) % total; } while (skip.has(frame));
+        const col = frame % cols;
+        const row = Math.floor(frame / cols);
+        const x = (col / (cols - 1)) * 100;
+        const y = (row / (rows - 1)) * 100;
+        el.style.backgroundPosition = `${x}% ${y}%`;
+      }
+      step();
+      setInterval(step, 220);
+    });
+  })();
+
   let resultsAnimTimer = null;
 
   function stopResultsAnimation() {
@@ -120,16 +141,10 @@
     resultsMascot.classList.remove("animated");
   }
 
-  function setStaticResultsMascot(level, variant) {
-    stopResultsAnimation();
-    resultsMascot.style.backgroundImage = `url("${mascotSrc(level, variant)}")`;
-    resultsMascot.style.backgroundPosition = "center";
-  }
-
   function playResultsAnimation(level) {
     stopResultsAnimation();
     resultsMascot.classList.add("animated");
-    resultsMascot.style.backgroundImage = `url("Images/${mascotFor(level)}Animation.png")`;
+    resultsMascot.style.backgroundImage = `url("${mascotAnimSrc(level)}")`;
     const cols = 6, rows = 3, total = cols * rows;
     const skip = new Set([13, 14]);
     let frame = -1;
@@ -149,14 +164,41 @@
     resultsAnimTimer = setInterval(step, 220);
   }
 
-  function setQuizMascot(variant) {
-    if (!session) return;
-    quizMascot.src = mascotSrc(session.level, variant);
-    quizMascot.classList.remove("react");
-    if (variant !== "Standard") {
-      void quizMascot.offsetWidth;
-      quizMascot.classList.add("react");
+  let quizAnimTimer = null;
+
+  function startQuizAnimation(level) {
+    stopQuizAnimation();
+    const src = mascotAnimSrc(level);
+    quizMascot.style.backgroundImage = `url("${src}")`;
+    const cols = 6, rows = 3, total = cols * rows;
+    const skip = new Set([13, 14]);
+    let frame = -1;
+    function nextFrame() {
+      do { frame = (frame + 1) % total; } while (skip.has(frame));
+      return frame;
     }
+    function step() {
+      const f = nextFrame();
+      const col = f % cols;
+      const row = Math.floor(f / cols);
+      const x = (col / (cols - 1)) * 100;
+      const y = (row / (rows - 1)) * 100;
+      quizMascot.style.backgroundPosition = `${x}% ${y}%`;
+    }
+    step();
+    quizAnimTimer = setInterval(step, 220);
+  }
+
+  function stopQuizAnimation() {
+    if (quizAnimTimer) {
+      clearInterval(quizAnimTimer);
+      quizAnimTimer = null;
+    }
+  }
+
+  function setQuizMascot() {
+    if (!session) return;
+    startQuizAnimation(session.level);
   }
 
   let session = null;
@@ -469,7 +511,7 @@
       answerInput.setAttribute("inputmode", "text");
       answerInput.setAttribute("placeholder", "Type the word here");
     }
-    setQuizMascot("Standard");
+    setQuizMascot();
     showCurrent();
     answerInput.focus();
   }
@@ -615,7 +657,7 @@
     if (session.i >= session.words.length) {
       showResults();
     } else {
-      setQuizMascot("Standard");
+      setQuizMascot();
       showCurrent();
       answerInput.focus();
     }
@@ -664,7 +706,7 @@
       session.correct += 1;
       feedback.textContent = "✅ Correct!";
       feedback.className = "good";
-      setQuizMascot("Correct" + (1 + Math.floor(Math.random() * 3)));
+      setQuizMascot();
       celebrateFromMascot();
       session.i += 1;
       setTimeout(advanceQuiz, 900);
@@ -672,7 +714,7 @@
       session.missed.push(cur);
       feedback.textContent = `❌ The answer was ${correctAnswerText(cur)}.`;
       feedback.className = "bad";
-      setQuizMascot("Incorrect" + (1 + Math.floor(Math.random() * 3)));
+      setQuizMascot();
       session.i += 1;
       answerForm.classList.add("hidden");
       nextBtn.classList.remove("hidden");
@@ -683,6 +725,7 @@
   // ---- results ----
 
   function showResults() {
+    stopQuizAnimation();
     quiz.classList.add("hidden");
     results.classList.remove("hidden");
     const total = session.words.length;
@@ -723,12 +766,7 @@
     renderStreakInto(session.name, resultsStreakEl, resultsChocolateEl);
 
     const justHitChocolate = streak === CHOCOLATE_STREAK;
-    if (pct === 1 || justHitChocolate) {
-      playResultsAnimation(session.level);
-    } else {
-      const variant = pct >= 0.7 ? "Correct1" : pct >= 0.4 ? "Standard" : "Incorrect3";
-      setStaticResultsMascot(session.level, variant);
-    }
+    playResultsAnimation(session.level);
     if (justHitChocolate) {
       setTimeout(() => {
         const r = resultsMascot.getBoundingClientRect();

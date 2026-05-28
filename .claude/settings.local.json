@@ -7,7 +7,9 @@
       "WebFetch(domain:www.australiancurriculum.edu.au)",
       "Bash(awk ' *)",
       "WebFetch(domain:v9.australiancurriculum.edu.au)",
-      "WebFetch(domain:www.qcaa.qld.edu.au)"
+      "WebFetch(domain:www.qcaa.qld.edu.au)",
+      "Bash(Get-ChildItem -Path \"c:\\\\git\\\\Spelling\" -Recurse -Directory)",
+      "Bash(Select-Object -ExpandProperty FullName)"
     ]
   }
 }
