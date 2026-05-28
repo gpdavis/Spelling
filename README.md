@@ -146,6 +146,27 @@ This works out of the box on GitHub Pages — no version file to maintain. To di
 - Each device tracks its own state; there are no accounts.
 - The speech voice is whatever the browser provides — quality varies by OS.
 
+## Automated tests
+
+Playwright tests cover the home screen, both quiz flows, and the mascot frame logic. They live in [tests/](tests/) and run against a local `http-server` that Playwright starts on `:4567` automatically.
+
+One-time setup (requires [Node.js](https://nodejs.org)):
+
+```powershell
+npm install
+npx playwright install chromium
+```
+
+Run the suite:
+
+```powershell
+npm test               # headless
+npm run test:ui        # interactive UI runner
+npm run test:headed    # watch the browser drive itself
+```
+
+Tests stub [words.js](words.js) and [maths.js](maths.js) via `page.route()` with single-question fixtures, so each spec knows the exact expected answer.
+
 ## Testing helpers
 
 Open the browser's DevTools console (F12 → Console tab) and run:
