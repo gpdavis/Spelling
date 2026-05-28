@@ -111,23 +111,9 @@
   }
 
   (function initHomeMascots() {
-    const els = document.querySelectorAll(".home-mascot-anim");
-    const cols = 6, rows = 3, total = cols * rows;
-    const skip = new Set([13, 14]);
-    els.forEach((el) => {
-      const name = el.dataset.mascot;
-      el.style.backgroundImage = `url("Images/${name}Animation.png")`;
-      let frame = -1;
-      function step() {
-        do { frame = (frame + 1) % total; } while (skip.has(frame));
-        const col = frame % cols;
-        const row = Math.floor(frame / cols);
-        const x = (col / (cols - 1)) * 100;
-        const y = (row / (rows - 1)) * 100;
-        el.style.backgroundPosition = `${x}% ${y}%`;
-      }
-      step();
-      setInterval(step, 220);
+    document.querySelectorAll(".home-mascot-anim").forEach((el) => {
+      el.style.backgroundImage = `url("Images/${el.dataset.mascot}Animation.png")`;
+      el.style.backgroundPosition = "0% 0%";
     });
   })();
 
@@ -164,41 +150,31 @@
     resultsAnimTimer = setInterval(step, 220);
   }
 
-  let quizAnimTimer = null;
+  const HAPPY_FRAMES = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 15, 16, 17];
+  const UNHAPPY_FRAMES = [12, 13, 14];
 
-  function startQuizAnimation(level) {
-    stopQuizAnimation();
-    const src = mascotAnimSrc(level);
-    quizMascot.style.backgroundImage = `url("${src}")`;
-    const cols = 6, rows = 3, total = cols * rows;
-    const skip = new Set([13, 14]);
-    let frame = -1;
-    function nextFrame() {
-      do { frame = (frame + 1) % total; } while (skip.has(frame));
-      return frame;
-    }
-    function step() {
-      const f = nextFrame();
-      const col = f % cols;
-      const row = Math.floor(f / cols);
-      const x = (col / (cols - 1)) * 100;
-      const y = (row / (rows - 1)) * 100;
-      quizMascot.style.backgroundPosition = `${x}% ${y}%`;
-    }
-    step();
-    quizAnimTimer = setInterval(step, 220);
+  function framePosition(frame) {
+    const col = frame % 6;
+    const row = Math.floor(frame / 6);
+    return `${(col / 5) * 100}% ${(row / 2) * 100}%`;
   }
 
-  function stopQuizAnimation() {
-    if (quizAnimTimer) {
-      clearInterval(quizAnimTimer);
-      quizAnimTimer = null;
-    }
+  function pickFrame(pool) {
+    return pool[Math.floor(Math.random() * pool.length)];
   }
 
-  function setQuizMascot() {
+  function setQuizMascot(state) {
     if (!session) return;
-    startQuizAnimation(session.level);
+    quizMascot.style.backgroundImage = `url("${mascotAnimSrc(session.level)}")`;
+    let frame = 0;
+    if (state === "correct") frame = pickFrame(HAPPY_FRAMES);
+    else if (state === "wrong") frame = pickFrame(UNHAPPY_FRAMES);
+    quizMascot.style.backgroundPosition = framePosition(frame);
+    quizMascot.classList.remove("react");
+    if (state) {
+      void quizMascot.offsetWidth;
+      quizMascot.classList.add("react");
+    }
   }
 
   let session = null;
@@ -706,7 +682,7 @@
       session.correct += 1;
       feedback.textContent = "✅ Correct!";
       feedback.className = "good";
-      setQuizMascot();
+      setQuizMascot("correct");
       celebrateFromMascot();
       session.i += 1;
       setTimeout(advanceQuiz, 900);
@@ -714,7 +690,7 @@
       session.missed.push(cur);
       feedback.textContent = `❌ The answer was ${correctAnswerText(cur)}.`;
       feedback.className = "bad";
-      setQuizMascot();
+      setQuizMascot("wrong");
       session.i += 1;
       answerForm.classList.add("hidden");
       nextBtn.classList.remove("hidden");
@@ -725,7 +701,6 @@
   // ---- results ----
 
   function showResults() {
-    stopQuizAnimation();
     quiz.classList.add("hidden");
     results.classList.remove("hidden");
     const total = session.words.length;
@@ -766,7 +741,14 @@
     renderStreakInto(session.name, resultsStreakEl, resultsChocolateEl);
 
     const justHitChocolate = streak === CHOCOLATE_STREAK;
-    playResultsAnimation(session.level);
+    if (pct === 1 || justHitChocolate) {
+      playResultsAnimation(session.level);
+    } else {
+      stopResultsAnimation();
+      resultsMascot.style.backgroundImage = `url("${mascotAnimSrc(session.level)}")`;
+      resultsMascot.style.backgroundPosition = "0% 0%";
+      resultsMascot.classList.add("animated");
+    }
     if (justHitChocolate) {
       setTimeout(() => {
         const r = resultsMascot.getBoundingClientRect();
