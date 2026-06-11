@@ -41,6 +41,7 @@
   const LEVEL_KEY   = "spelling.level";
   const STREAK_KEY  = "spelling.streaks";
   const WORDS_PER_SESSION = 10;
+  const WEEKLY_POOL_SIZE = 20;
   const CHOCOLATE_STREAK = 10;
 
   const lists       = window.WORD_LISTS || {};
@@ -109,13 +110,6 @@
     if (!rect.width) return;
     launchConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2);
   }
-
-  (function initHomeMascots() {
-    document.querySelectorAll(".home-mascot-anim").forEach((el) => {
-      el.style.backgroundImage = `url("Images/${el.dataset.mascot}Animation.png")`;
-      el.style.backgroundPosition = "0% 0%";
-    });
-  })();
 
   let resultsAnimTimer = null;
 
@@ -427,7 +421,21 @@
     const subs = lists[level] || {};
     const all = [];
     Object.values(subs).forEach((arr) => arr.forEach((w) => all.push(w)));
-    return shuffle(all).slice(0, Math.min(WORDS_PER_SESSION, all.length));
+    if (!all.length) return [];
+
+    const now = new Date();
+    // The week (Mon–Sun) has a single stable 20-word pool, so a kid practises
+    // the same set all week. Seed by level + the week's Monday so each year
+    // level gets its own pool and it only changes when a new week starts.
+    const weekRng = mulberry32(hashSeed(`${level}|week|${mondayKey(now)}`));
+    const weekPool = seededShuffle(all, weekRng)
+      .slice(0, Math.min(WEEKLY_POOL_SIZE, all.length));
+
+    // Each day draws a stable 10 from that pool — same 10 all day (so retries
+    // and repeat sessions reinforce the same words), a fresh draw each morning.
+    const dayRng = mulberry32(hashSeed(`${level}|day|${dateKey(now)}`));
+    return seededShuffle(weekPool, dayRng)
+      .slice(0, Math.min(WORDS_PER_SESSION, weekPool.length));
   }
 
   function buildMathsSession(level) {
@@ -1029,6 +1037,56 @@
       [arr[i], arr[j]] = [arr[j], arr[i]];
     }
     return arr;
+  }
+
+  // ---- seeded (deterministic) shuffling ----
+  //
+  // Spelling sessions need a *stable* random draw: the same 20 words all week
+  // and the same 10 all day. A seeded PRNG gives us that — same seed in, same
+  // sequence out — so the choice survives reloads, retries, and "New practice".
+
+  // FNV-1a string hash → 32-bit unsigned seed.
+  function hashSeed(str) {
+    let h = 2166136261 >>> 0;
+    for (let i = 0; i < str.length; i++) {
+      h ^= str.charCodeAt(i);
+      h = Math.imul(h, 16777619);
+    }
+    return h >>> 0;
+  }
+
+  // mulberry32 — tiny, fast, well-distributed PRNG returning [0, 1).
+  function mulberry32(seed) {
+    let a = seed >>> 0;
+    return function () {
+      a = (a + 0x6d2b79f5) | 0;
+      let t = Math.imul(a ^ (a >>> 15), 1 | a);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  // Fisher–Yates using a supplied rng; returns a new array (source untouched).
+  function seededShuffle(arr, rng) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(rng() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  // Local-date key "YYYY-M-D" — identifies a single day for the daily draw.
+  function dateKey(d) {
+    return `${d.getFullYear()}-${d.getMonth() + 1}-${d.getDate()}`;
+  }
+
+  // Key for the Monday of d's week — identifies a week for the weekly pool.
+  function mondayKey(d) {
+    const dow = d.getDay(); // 0=Sun … 6=Sat
+    const toMonday = dow === 0 ? -6 : 1 - dow;
+    const monday = new Date(d.getFullYear(), d.getMonth(), d.getDate() + toMonday);
+    return dateKey(monday);
   }
 
   // Hidden helper for testing — open the browser's DevTools console

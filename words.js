@@ -230,7 +230,7 @@ window.WORD_LISTS = {
       { word: "first",     sentence: "I came first in the race.",           emoji: "🥇" },
       { word: "use",       sentence: "Use your pencil to write.",           emoji: "✏️" },
       { word: "our",       sentence: "This is our classroom." },
-      { word: "too",       sentence: "I want to come too.",                 homophone: true },
+      { word: "too",       sentence: "I love cooking too.",                 homophone: true },
       { word: "keep",      sentence: "Keep your room tidy." },
       { word: "put",       sentence: "Put your bag away.",                  emoji: "🎒" },
       { word: "now",       sentence: "We need to go now." },

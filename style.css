@@ -340,23 +340,16 @@ button.primary:hover { filter: brightness(1.1); }
   box-shadow: 0 0 90px 24px #000;
 }
 
-.home-mascots {
+.home-logo {
   display: flex;
   justify-content: center;
-  gap: 1rem;
   margin: 0.25rem 0 1rem;
 }
 
-.home-mascots .mascot {
-  width: 45%;
-  max-width: 200px;
-  aspect-ratio: 1;
-}
-
-.home-mascot-anim {
-  background-repeat: no-repeat;
-  background-size: 600% 300%;
-  background-position: 0% 0%;
+.home-logo-svg {
+  width: 60%;
+  max-width: 240px;
+  height: auto;
 }
 
 .mascot-stage {
