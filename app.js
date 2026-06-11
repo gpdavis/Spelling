@@ -803,7 +803,7 @@
 
     if (session.subject === "spelling" && !earnsTick) {
       const note = document.createElement("div");
-      note.className = "streak-sub";
+      note.className = "spelling-tick-note";
       note.textContent = `Score ${Math.round(SPELLING_PASS_PCT * 100)}% or more to tick spelling off for today — try Retry missed!`;
       resultsStreakEl.appendChild(note);
       resultsStreakEl.classList.remove("hidden");
