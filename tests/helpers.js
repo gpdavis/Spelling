@@ -35,6 +35,19 @@ async function installFixtures(page) {
   await page.route("**/maths.js", (route) =>
     route.fulfill({ status: 200, contentType: "application/javascript", body: TEST_MATHS_JS })
   );
+  // Streaks read the Form's linked Sheet as CSV. Stub it with just a header row
+  // so tests stay offline and deterministic (no real streak history).
+  await page.route("**/gviz/tq*", (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: "text/csv",
+      body: '"Timestamp","Name","Level","Score","Total","Percent","Missed words"\n',
+    })
+  );
+  // Swallow the results POST so test runs don't inject rows into the real Sheet.
+  await page.route("**/formResponse*", (route) =>
+    route.fulfill({ status: 200, contentType: "text/plain", body: "" })
+  );
 }
 
 // Mirrors app.js: 6x3 grid, frames 12-14 are unhappy, the rest are happy.

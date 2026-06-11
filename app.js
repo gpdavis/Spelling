@@ -39,7 +39,8 @@
   const HISTORY_KEY = "spelling.history";
   const NAME_KEY    = "spelling.name";
   const LEVEL_KEY   = "spelling.level";
-  const STREAK_KEY  = "spelling.streaks";
+  const STREAK_CACHE_KEY = "spelling.streakCache"; // last Sheet-derived day map (offline cache)
+  const LOCAL_TODAY_KEY  = "spelling.localToday";  // optimistic "done today" overlay (this device)
   const WORDS_PER_SESSION = 10;
   const WEEKLY_POOL_SIZE = 20;
   const CHOCOLATE_STREAK = 10;
@@ -178,96 +179,186 @@
   // through before either reaching 0 missed or clicking "New practice".
   let attempt = null;
 
-  // ---- streaks ----
+  // ---- streaks (Google Sheet–backed) ----
+  //
+  // The Form's linked Sheet is the source of truth, so a kid's run of days
+  // follows them across devices. We read it as CSV (the Sheet is shared
+  // "anyone with the link can view") and compute the streak per name+year.
+  //
+  // A day counts only when BOTH spelling and maths were passed (≥PASS_PCT) that
+  // day; the streak is the run of such days ending today or yesterday.
+  //
+  // Two wrinkles the code handles:
+  //   * A just-finished quiz won't appear in the Sheet for a few seconds, so we
+  //     keep an optimistic local overlay of today's passes on this device.
+  //   * The Sheet read can fail (offline), so the last good day-map is cached
+  //     in localStorage and used until a fresh read lands.
 
-  function loadStreaks() {
-    try { return JSON.parse(localStorage.getItem(STREAK_KEY) || "{}"); }
-    catch (e) { return {}; }
-  }
+  const STREAK_SHEET_CSV_URL =
+    "https://docs.google.com/spreadsheets/d/1ijGzT_benZ01we7Sb9svit0o_mefw7h_2i3Oye1deMw/gviz/tq?tqx=out:csv";
 
   function todayStr() {
     const d = new Date();
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   }
 
-  function daysBetween(a, b) {
-    const ad = new Date(a + "T00:00:00").getTime();
-    const bd = new Date(b + "T00:00:00").getTime();
-    return Math.round((bd - ad) / 86400000);
+  function addDays(dateStr, delta) {
+    const d = new Date(dateStr + "T00:00:00");
+    d.setDate(d.getDate() + delta);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   }
 
-  // Streak entry shape:
-  //   { lastCounted: "YYYY-MM-DD",   // last day the streak ticked up (both subjects done)
-  //     count: N,
-  //     todayDate: "YYYY-MM-DD",     // the day todayDone applies to
-  //     todayDone: { spelling: true, maths: true } }
-  //
-  // Old shape was { last, count } and assumed any practice ticked the streak.
-  // We migrate read-only so existing kids don't lose their numbers.
-  function readStreakEntry(all, name) {
-    const raw = all[name];
-    if (!raw) return null;
-    // New shape always carries a `todayDate` key (even if null). Anything
-    // without it is the legacy `{ last, count }` shape and needs migrating.
-    if ("todayDate" in raw) return raw;
-    return {
-      lastCounted: raw.last || null,
-      count: raw.count || 0,
-      todayDate: null,
-      todayDone: {},
-    };
+  // Identity = name (case-insensitive, trimmed) + year (exact).
+  function streakKey(name, year) {
+    return `${String(name || "").trim().toLowerCase()}|${String(year || "").trim()}`;
   }
 
-  // Records that `name` practised `subject` today. Returns the live streak count
-  // after this practice. The count only ticks once both spelling AND maths have
-  // been done on the same day.
-  function recordPracticeForToday(name, subject) {
-    if (!name || !subject) return 0;
-    const all = loadStreaks();
+  // ---- reading the Sheet ----
+
+  // Minimal RFC-4180-ish CSV parser: handles quoted fields, "" escapes, and
+  // commas / newlines inside quotes. Returns an array of string arrays.
+  function parseCSV(text) {
+    const rows = [];
+    let row = [], field = "", inQuotes = false;
+    for (let i = 0; i < text.length; i++) {
+      const c = text[i];
+      if (inQuotes) {
+        if (c === '"') {
+          if (text[i + 1] === '"') { field += '"'; i++; }
+          else inQuotes = false;
+        } else field += c;
+      } else if (c === '"') {
+        inQuotes = true;
+      } else if (c === ",") {
+        row.push(field); field = "";
+      } else if (c === "\n") {
+        row.push(field); rows.push(row); row = []; field = "";
+      } else if (c !== "\r") {
+        field += c;
+      }
+    }
+    if (field !== "" || row.length) { row.push(field); rows.push(row); }
+    return rows;
+  }
+
+  // Form timestamps arrive as "DD/MM/YYYY HH:mm:ss" (AU locale), which
+  // new Date() would misread — pull the parts out by hand → "YYYY-MM-DD".
+  function sheetDateKey(ts) {
+    const m = String(ts).match(/^\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/);
+    if (!m) return null;
+    return `${m[3]}-${m[2].padStart(2, "0")}-${m[1].padStart(2, "0")}`;
+  }
+
+  // "Year 4 · Maths · Division facts" → { year: "Year 4", subject: "maths" }.
+  // Legacy rows with no subject segment return subject: null and are ignored.
+  function parseLevel(level) {
+    const parts = String(level).split("·").map((s) => s.trim());
+    const sub = (parts[1] || "").toLowerCase();
+    const subject = sub === "maths" ? "maths" : sub === "spelling" ? "spelling" : null;
+    return { year: parts[0] || "", subject };
+  }
+
+  // Fold the Sheet rows into  key → { "YYYY-MM-DD": { spelling, maths } }, where
+  // a true flag means that subject was passed (≥PASS_PCT) on that day.
+  function buildDayMap(rows) {
+    const map = {};
+    const passMark = PASS_PCT * 100;
+    for (let i = 1; i < rows.length; i++) { // row 0 is the header
+      const r = rows[i];
+      if (!r || r.length < 6) continue;
+      const { year, subject } = parseLevel(r[2]);
+      if (!subject) continue;
+      const pct = parseFloat(r[5]);
+      if (!isFinite(pct) || pct < passMark) continue;
+      const date = sheetDateKey(r[0]);
+      if (!date) continue;
+      const key = streakKey(r[1], year);
+      const days = map[key] || (map[key] = {});
+      const day = days[date] || (days[date] = { spelling: false, maths: false });
+      day[subject] = true;
+    }
+    return map;
+  }
+
+  function loadDayMapCache() {
+    try { return JSON.parse(localStorage.getItem(STREAK_CACHE_KEY) || "{}"); }
+    catch (e) { return {}; }
+  }
+
+  // In-memory day-map; seeded from cache so the home screen renders instantly,
+  // then replaced when the Sheet read lands.
+  let sheetDayMap = loadDayMapCache();
+
+  async function refreshStreaksFromSheet() {
+    if (!STREAK_SHEET_CSV_URL) return;
+    try {
+      const res = await fetch(STREAK_SHEET_CSV_URL, { cache: "no-store" });
+      if (!res.ok) return;
+      sheetDayMap = buildDayMap(parseCSV(await res.text()));
+      try { localStorage.setItem(STREAK_CACHE_KEY, JSON.stringify(sheetDayMap)); } catch (e) {}
+      if (!setup.classList.contains("hidden")) refreshHomeStreak();
+    } catch (e) { /* offline — keep the cached map */ }
+  }
+
+  // ---- optimistic "done today" overlay (this device) ----
+
+  function loadLocalToday() {
+    try { return JSON.parse(localStorage.getItem(LOCAL_TODAY_KEY) || "{}"); }
+    catch (e) { return {}; }
+  }
+
+  function recordLocalPass(name, year, subject) {
+    const all = loadLocalToday();
+    const key = streakKey(name, year);
     const today = todayStr();
-    const entry = readStreakEntry(all, name) || {
-      lastCounted: null,
-      count: 0,
-      todayDate: null,
-      todayDone: {},
-    };
-    if (entry.todayDate !== today) {
-      entry.todayDate = today;
-      entry.todayDone = {};
-    }
-    entry.todayDone[subject] = true;
-    const bothDone = entry.todayDone.spelling && entry.todayDone.maths;
-    if (bothDone && entry.lastCounted !== today) {
-      const gap = entry.lastCounted ? daysBetween(entry.lastCounted, today) : null;
-      entry.count = gap === 1 ? entry.count + 1 : 1;
-      entry.lastCounted = today;
-    }
-    all[name] = entry;
-    localStorage.setItem(STREAK_KEY, JSON.stringify(all));
-    return entry.count;
+    let e = all[key];
+    if (!e || e.date !== today) e = { date: today, spelling: false, maths: false };
+    e[subject] = true;
+    all[key] = e;
+    try { localStorage.setItem(LOCAL_TODAY_KEY, JSON.stringify(all)); } catch (err) {}
   }
 
-  // Returns { count, todayDone: { spelling, maths } } for display.
-  // count is 0 once a day is missed (last counted day was 2+ days ago).
-  function getStreakStatus(name) {
+  function localTodayFor(key) {
+    const e = loadLocalToday()[key];
+    if (e && e.date === todayStr()) return { spelling: !!e.spelling, maths: !!e.maths };
+    return { spelling: false, maths: false };
+  }
+
+  // ---- computing the streak ----
+
+  // Returns { count, todayDone: { spelling, maths } } for name+year, combining
+  // the Sheet history with today's optimistic local passes.
+  function getStreakStatus(name, year) {
     if (!name) return { count: 0, todayDone: {} };
-    const all = loadStreaks();
-    const entry = readStreakEntry(all, name);
-    if (!entry) return { count: 0, todayDone: {} };
+    const key = streakKey(name, year);
+    const src = sheetDayMap[key] || {};
+    const days = {};
+    for (const d in src) days[d] = { spelling: !!src[d].spelling, maths: !!src[d].maths };
+
     const today = todayStr();
-    const gap = entry.lastCounted ? daysBetween(entry.lastCounted, today) : null;
-    const rawCount = Number(entry.count);
-    const safeCount = Number.isFinite(rawCount) && rawCount >= 0 ? Math.floor(rawCount) : 0;
-    const liveCount = (gap === 0 || gap === 1) ? safeCount : 0;
-    const todayDone = entry.todayDate === today ? (entry.todayDone || {}) : {};
-    return { count: liveCount, todayDone };
+    const loc = localTodayFor(key);
+    if (loc.spelling || loc.maths) {
+      const d = days[today] || (days[today] = { spelling: false, maths: false });
+      d.spelling = d.spelling || loc.spelling;
+      d.maths = d.maths || loc.maths;
+    }
+
+    const qualifies = (date) => !!(days[date] && days[date].spelling && days[date].maths);
+
+    let anchor = null;
+    if (qualifies(today)) anchor = today;
+    else if (qualifies(addDays(today, -1))) anchor = addDays(today, -1);
+
+    let count = 0;
+    for (let cur = anchor; cur && qualifies(cur); cur = addDays(cur, -1)) count++;
+
+    const todayDone = days[today]
+      ? { spelling: !!days[today].spelling, maths: !!days[today].maths }
+      : {};
+    return { count, todayDone };
   }
 
-  function currentStreakFor(name) {
-    return getStreakStatus(name).count;
-  }
-
-  function renderStreakInto(name, streakEl, chocolateEl) {
+  function renderStreakInto(name, year, streakEl, chocolateEl) {
     streakEl.textContent = "";
     const line = document.createElement("div");
     line.className = "streak-line";
@@ -280,7 +371,7 @@
       return;
     }
 
-    const { count, todayDone } = getStreakStatus(name);
+    const { count, todayDone } = getStreakStatus(name, year);
     const spellingDone = !!todayDone.spelling;
     const mathsDone    = !!todayDone.maths;
     const bothDone     = spellingDone && mathsDone;
@@ -314,7 +405,7 @@
   }
 
   function refreshHomeStreak() {
-    renderStreakInto(nameInput.value.trim(), homeStreakEl, homeChocolateEl);
+    renderStreakInto(nameInput.value.trim(), levelSelect.value, homeStreakEl, homeChocolateEl);
   }
 
   // ---- setup screen ----
@@ -375,6 +466,9 @@
     localStorage.setItem(NAME_KEY, nameInput.value.trim());
     refreshHomeStreak();
   });
+
+  // The home streak is per name+year, so refresh it when the year changes too.
+  levelSelect.addEventListener("change", refreshHomeStreak);
 
   changeBtn.addEventListener("click", expandSetup);
 
@@ -795,10 +889,9 @@
       ? attempt.endCorrect / attempt.originalTotal
       : pct;
     const earnsTick = finalPct >= PASS_PCT;
-    const streak = earnsTick
-      ? recordPracticeForToday(session.name, session.subject)
-      : currentStreakFor(session.name);
-    renderStreakInto(session.name, resultsStreakEl, resultsChocolateEl);
+    if (earnsTick) recordLocalPass(session.name, session.level, session.subject);
+    const streak = getStreakStatus(session.name, session.level).count;
+    renderStreakInto(session.name, session.level, resultsStreakEl, resultsChocolateEl);
 
     if (!earnsTick) {
       const subjectLabel = session.subject === "maths" ? "maths" : "spelling";
@@ -1220,12 +1313,16 @@
 
   // Re-check whenever the tab comes back into focus
   document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) checkForUpdate();
+    if (!document.hidden) {
+      checkForUpdate();
+      refreshStreaksFromSheet();
+    }
   });
 
   // boot
   populateLevels();
   applySetupMode();
+  refreshStreaksFromSheet();
   checkForUpdate();
   setInterval(checkForUpdate, UPDATE_CHECK_INTERVAL_MS);
 })();

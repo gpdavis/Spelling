@@ -60,11 +60,11 @@ The mascot swaps between standard / correct / incorrect poses as the kid answers
 
 ## Streaks
 
-The app tracks how many days in a row each kid (keyed by name) has practised. The rule:
+The app tracks how many days in a row each kid has practised, identified by **name + year** (so Dad practising Year 2 with a child is a different streak from Dad's own Year 4, and two kids of the same name in different years don't collide). The rule:
 
-> **A day only counts toward the streak when the kid has done both spelling *and* maths on that same day.**
+> **A day only counts toward the streak when the kid has passed *both* spelling *and* maths — each at 80% or better — on that same day.**
 
-While today is in progress, the home and results screens show a progress line like `Today: ✅ Spelling · ⬜ Maths`. Once both are ticked, the streak counter rolls forward. Missing a day (or only doing one subject for a day) breaks the streak — it resets to 0 and starts fresh the next time both subjects are done.
+While today is in progress, the home and results screens show a progress line like `Today: ✅ Spelling · ⬜ Maths` (a subject ticks only once it's passed at ≥80%). Once both are ticked, the streak counter rolls forward. Missing a day (or only passing one subject for a day) breaks the streak — it resets to 0 and starts fresh the next time both subjects are passed. A run stays "live" as long as the most recent qualifying day was today or yesterday.
 
 At a 10-day streak the home and results screens show:
 
@@ -72,7 +72,11 @@ At a 10-day streak the home and results screens show:
 
 When the streak ticks over to exactly 10, the results screen also fires the looping victory sprite + a confetti burst.
 
-Streak data lives in `localStorage` under `spelling.streaks` as a per-name JSON map: `{ lastCounted, count, todayDate, todayDone }`. Older `{ last, count }` entries are migrated read-only so existing kids keep their numbers.
+### Streaks come from the Google Sheet
+
+Streaks are computed from the **same Google Sheet the results are posted to** (see below), so a kid's run of days follows them across every device — not just the browser they happened to use. The app reads the Sheet as CSV via its gviz endpoint (`STREAK_SHEET_CSV_URL` in `app.js`); this requires the linked Sheet to be shared **"anyone with the link can view"**. Each row's `Level` column (`Year 4 · Maths · …`) supplies the year and subject, and `Percent` supplies the score, so the both-subjects-at-80% rule is derived entirely from the Sheet.
+
+Because a just-finished quiz takes a few seconds to appear in the Sheet, the app keeps a small optimistic overlay of *today's* passes in `localStorage` (`spelling.localToday`) so the streak updates instantly on the results screen; the last good Sheet read is cached in `spelling.streakCache` so the home screen isn't blank before the fetch lands (and degrades gracefully offline). The Sheet is re-read on load and whenever the tab regains focus.
 
 ## Results go to a Google Sheet
 
@@ -141,9 +145,9 @@ This works out of the box on GitHub Pages — no version file to maintain. To di
 
 ## Notes
 
-- Name, level, streaks, and local session history are all persisted per-device via `localStorage`.
-- Streak data is keyed by name, so siblings sharing a device each get their own streak.
-- Each device tracks its own state; there are no accounts.
+- Name, level, and local session history are persisted per-device via `localStorage`.
+- Streaks are sourced from the shared Google Sheet (keyed by name + year), so they sync across devices; only a small `localStorage` cache/overlay is per-device. See [Streaks](#streaks).
+- There are no accounts — identity is just the name + year a kid picks.
 - The speech voice is whatever the browser provides — quality varies by OS.
 
 ## Automated tests
