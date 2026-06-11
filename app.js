@@ -43,6 +43,9 @@
   const WORDS_PER_SESSION = 10;
   const WEEKLY_POOL_SIZE = 20;
   const CHOCOLATE_STREAK = 10;
+  // Spelling only earns the day's tick at this final score or better. Maths
+  // always counts regardless of score.
+  const SPELLING_PASS_PCT = 0.8;
 
   const lists       = window.WORD_LISTS || {};
   const mathsLists  = window.MATHS_LISTS || {};
@@ -787,10 +790,26 @@
     retryBtn.disabled = session.missed.length === 0;
     saveSessionToHistory();
 
-    const streak = recordPracticeForToday(session.name, session.subject);
+    // Spelling needs ≥80% (counting any retry rounds) to earn the day's tick;
+    // maths always counts. If it doesn't qualify we leave the streak untouched.
+    const finalPct = attempt && attempt.originalTotal
+      ? attempt.endCorrect / attempt.originalTotal
+      : pct;
+    const earnsTick = session.subject !== "spelling" || finalPct >= SPELLING_PASS_PCT;
+    const streak = earnsTick
+      ? recordPracticeForToday(session.name, session.subject)
+      : currentStreakFor(session.name);
     renderStreakInto(session.name, resultsStreakEl, resultsChocolateEl);
 
-    const justHitChocolate = streak === CHOCOLATE_STREAK;
+    if (session.subject === "spelling" && !earnsTick) {
+      const note = document.createElement("div");
+      note.className = "streak-sub";
+      note.textContent = `Score ${Math.round(SPELLING_PASS_PCT * 100)}% or more to tick spelling off for today — try Retry missed!`;
+      resultsStreakEl.appendChild(note);
+      resultsStreakEl.classList.remove("hidden");
+    }
+
+    const justHitChocolate = earnsTick && streak === CHOCOLATE_STREAK;
     if (pct === 1 || justHitChocolate) {
       playResultsAnimation(session.level);
     } else {
