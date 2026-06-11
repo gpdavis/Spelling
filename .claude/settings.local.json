@@ -10,7 +10,9 @@
       "WebFetch(domain:www.qcaa.qld.edu.au)",
       "Bash(Get-ChildItem -Path \"c:\\\\git\\\\Spelling\" -Recurse -Directory)",
       "Bash(Select-Object -ExpandProperty FullName)",
-      "Bash(npx playwright *)"
+      "Bash(npx playwright *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)"
     ]
   }
 }
