@@ -460,11 +460,53 @@
       }
       if (!q || !q.question) continue;
       if (!q.context) q.context = topicName;
+      // Remember where this question came from so a retry can re-ask the same
+      // kind of question with different numbers (see regenerateMathsQuestion).
+      q.source = Array.isArray(topic)
+        ? { topicName }
+        : { topicName, generator: topic.generator, args: topic.args || {} };
       if (seen.has(q.question)) continue;
       seen.add(q.question);
       out.push(q);
     }
     return out;
+  }
+
+  // Given a maths question the kid missed, produce a fresh question of the same
+  // kind so a retry reinforces the concept rather than the memorised answer:
+  //   - generator-backed topics: re-run the generator for new numbers
+  //   - hand-written list topics: pick a different entry from the same list
+  // Falls back to the original question if we can't do better.
+  function regenerateMathsQuestion(q, level) {
+    const src = q && q.source;
+    if (!src) return q;
+
+    if (src.generator && mathsGens[src.generator]) {
+      // Try a few times to avoid handing back the identical question.
+      for (let i = 0; i < 10; i++) {
+        const fresh = mathsGens[src.generator](src.args || {});
+        if (!fresh || !fresh.question) continue;
+        if (fresh.question === q.question && i < 9) continue;
+        if (!fresh.context) fresh.context = q.context;
+        fresh.source = src;
+        return fresh;
+      }
+      return q;
+    }
+
+    const topic = (mathsLists[level] || {})[src.topicName];
+    if (Array.isArray(topic) && topic.length) {
+      const others = topic.filter((e) => e && e.question !== q.question);
+      const pool = others.length ? others : topic;
+      const picked = pool[Math.floor(Math.random() * pool.length)];
+      if (picked && picked.question) {
+        const fresh = { ...picked };
+        if (!fresh.context) fresh.context = q.context || src.topicName;
+        fresh.source = src;
+        return fresh;
+      }
+    }
+    return q;
   }
 
   // ---- quiz ----
@@ -834,7 +876,12 @@
     if (!session.missed.length) return;
     stopResultsAnimation();
     if (attempt) attempt.retries += 1;
-    startSession(shuffle(session.missed.slice()), session.level, session.subject, session.subList);
+    let retryWords = session.missed.slice();
+    if (session.subject === "maths") {
+      // Same questions, different numbers — so they practise the skill, not the answer.
+      retryWords = retryWords.map((q) => regenerateMathsQuestion(q, session.level));
+    }
+    startSession(shuffle(retryWords), session.level, session.subject, session.subList);
   });
 
   restartBtn.addEventListener("click", () => {

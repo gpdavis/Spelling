@@ -9,7 +9,8 @@
       "WebFetch(domain:v9.australiancurriculum.edu.au)",
       "WebFetch(domain:www.qcaa.qld.edu.au)",
       "Bash(Get-ChildItem -Path \"c:\\\\git\\\\Spelling\" -Recurse -Directory)",
-      "Bash(Select-Object -ExpandProperty FullName)"
+      "Bash(Select-Object -ExpandProperty FullName)",
+      "Bash(npx playwright *)"
     ]
   }
 }

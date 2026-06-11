@@ -416,6 +416,18 @@ window.WORD_LISTS = {
       { word: "giant",     sentence: "The giant lived on a mountain.", emoji: "👹" },
       { word: "magic",     sentence: "The magic show was amazing.", emoji: "✨" },
       { word: "village",   sentence: "A tiny village in the hills.", emoji: "🏘️" }
+    ],
+    "Common words": [
+      { word: "should",    sentence: "You should eat your vegetables." },
+      { word: "own",       sentence: "I have my own room." },
+      { word: "under",     sentence: "The cat hid under the bed.",       emoji: "🐱" },
+      { word: "which",     sentence: "Which book do you want?" },
+      { word: "eight",     sentence: "I am eight years old.",            emoji: "8️⃣", homophone: true },
+      { word: "please",    sentence: "Can I have some, please?" },
+      { word: "these",     sentence: "These are my favourite shoes." },
+      { word: "those",     sentence: "Look at those birds!",             emoji: "🐦" },
+      { word: "year",      sentence: "We have a whole year of fun ahead.", emoji: "📅" },
+      { word: "yesterday", sentence: "Yesterday we went to the zoo.",    emoji: "🦁" }
     ]
   },
 
