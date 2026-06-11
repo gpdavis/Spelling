@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" role="img" aria-label="Spellatron">
+  <!-- Rounded dark tile so the white emblem reads as an app icon -->
+  <rect width="200" height="200" rx="36" fill="#111a2e"/>
+
+  <!-- Robot-in-a-circle emblem from the home-page logo, nudged to centre vertically -->
+  <g transform="translate(0,-5)">
+    <circle cx="100" cy="105" r="95" fill="none" stroke="#fff" stroke-width="4"/>
+
+    <rect x="88" y="130" width="24" height="12" rx="2" fill="none" stroke="#fff" stroke-width="2.5"/>
+    <rect x="58" y="72" width="84" height="62" rx="8" fill="none" stroke="#fff" stroke-width="3"/>
+    <rect x="96" y="60" width="8" height="14" rx="2" fill="none" stroke="#fff" stroke-width="2.5"/>
+    <circle cx="100" cy="56" r="7" fill="none" stroke="#fff" stroke-width="2.5"/>
+    <circle cx="98" cy="54" r="2" fill="#fff"/>
+    <rect x="67" y="82" width="66" height="28" rx="4" fill="none" stroke="#fff" stroke-width="2"/>
+    <rect x="72" y="87" width="22" height="18" rx="3" fill="none" stroke="#fff" stroke-width="2"/>
+    <circle cx="83" cy="96" r="5" fill="#fff"/>
+    <circle cx="81" cy="94" r="1.5" fill="#111a2e"/>
+    <rect x="106" y="87" width="22" height="18" rx="3" fill="none" stroke="#fff" stroke-width="2"/>
+    <circle cx="117" cy="96" r="5" fill="#fff"/>
+    <circle cx="115" cy="94" r="1.5" fill="#111a2e"/>
+    <rect x="67" y="116" width="66" height="14" rx="3" fill="none" stroke="#fff" stroke-width="1.5"/>
+    <text x="100" y="127" font-family="Courier New, monospace" font-size="10" font-weight="bold" fill="#fff" text-anchor="middle">S-P-E-L-L</text>
+
+    <rect x="68" y="142" width="64" height="44" rx="6" fill="none" stroke="#fff" stroke-width="3"/>
+    <rect x="78" y="150" width="44" height="28" rx="3" fill="none" stroke="#fff" stroke-width="1.5"/>
+    <circle cx="83" cy="155" r="3" fill="none" stroke="#fff" stroke-width="1.5"/>
+    <circle cx="117" cy="155" r="3" fill="none" stroke="#fff" stroke-width="1.5"/>
+    <circle cx="83" cy="173" r="3" fill="none" stroke="#fff" stroke-width="1.5"/>
+    <circle cx="117" cy="173" r="3" fill="none" stroke="#fff" stroke-width="1.5"/>
+    <polygon points="100,157 102,163 108,163 103,167 105,173 100,169 95,173 97,167 92,163 98,163" fill="#fff"/>
+    <rect x="46" y="144" width="22" height="12" rx="4" fill="none" stroke="#fff" stroke-width="2.5"/>
+    <circle cx="40" cy="150" r="8" fill="none" stroke="#fff" stroke-width="2.5"/>
+    <rect x="132" y="144" width="22" height="12" rx="4" fill="none" stroke="#fff" stroke-width="2.5"/>
+    <circle cx="160" cy="150" r="8" fill="none" stroke="#fff" stroke-width="2.5"/>
+
+    <polygon points="22,68 24,74 30,74 25,78 27,84 22,80 17,84 19,78 14,74 20,74" fill="#fff"/>
+    <polygon points="178,68 180,74 186,74 181,78 183,84 178,80 173,84 175,78 170,74 176,74" fill="#fff"/>
+  </g>
+</svg>
