@@ -430,6 +430,15 @@ button.primary:hover { filter: brightness(1.1); }
   box-shadow: 0 6px 18px rgba(120, 53, 15, 0.45);
 }
 
+/* Big-prize milestones get a brighter gold treatment to feel more special. */
+.chocolate-prize.big {
+  background: linear-gradient(135deg, #f59e0b, #b45309);
+  color: #fffbeb;
+  border-color: #fde68a;
+  font-size: 1.15rem;
+  box-shadow: 0 8px 22px rgba(217, 119, 6, 0.5);
+}
+
 /* ---- confetti ---- */
 
 .confetti-burst {

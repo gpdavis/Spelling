@@ -43,13 +43,25 @@
   const LOCAL_TODAY_KEY  = "spelling.localToday";  // optimistic "done today" overlay (this device)
   const WORDS_PER_SESSION = 10;
   const WEEKLY_POOL_SIZE = 20;
-  const CHOCOLATE_STREAK = 10;
   // Both spelling and maths need this final score or better to earn the day's tick.
   const PASS_PCT = 0.8;
 
   const lists       = window.WORD_LISTS || {};
   const mathsLists  = window.MATHS_LISTS || {};
   const mathsGens   = window.MATHS_GENERATORS || {};
+
+  // Streak prize milestones live in prizes.js (window.STREAK_PRIZES).
+  const PRIZES = window.STREAK_PRIZES || { small: { days: [], message: "" }, big: { days: [], message: "" } };
+
+  // Which prize, if any, a streak of `count` days wins. Big takes precedence
+  // over small if a day count somehow appears in both lists. Returns the prize
+  // tier object ({ days, message }) or null.
+  function prizeForCount(count) {
+    if (!count) return null;
+    if (PRIZES.big && Array.isArray(PRIZES.big.days) && PRIZES.big.days.includes(count)) return PRIZES.big;
+    if (PRIZES.small && Array.isArray(PRIZES.small.days) && PRIZES.small.days.includes(count)) return PRIZES.small;
+    return null;
+  }
 
   const quizMascot    = $("quiz-mascot");
   const resultsMascot = $("results-mascot");
@@ -397,7 +409,10 @@
 
     streakEl.classList.remove("hidden");
 
-    if (count >= CHOCOLATE_STREAK) {
+    const prize = prizeForCount(count);
+    if (prize) {
+      chocolateEl.textContent = prize.message;
+      chocolateEl.classList.toggle("big", prize === PRIZES.big);
       chocolateEl.classList.remove("hidden");
     } else {
       chocolateEl.classList.add("hidden");
@@ -902,8 +917,8 @@
       resultsStreakEl.classList.remove("hidden");
     }
 
-    const justHitChocolate = earnsTick && streak === CHOCOLATE_STREAK;
-    if (pct === 1 || justHitChocolate) {
+    const justHitPrize = earnsTick && !!prizeForCount(streak);
+    if (pct === 1 || justHitPrize) {
       playResultsAnimation(session.level);
     } else {
       stopResultsAnimation();
@@ -911,7 +926,7 @@
       resultsMascot.style.backgroundPosition = "0% 0%";
       resultsMascot.classList.add("animated");
     }
-    if (justHitChocolate) {
+    if (justHitPrize) {
       setTimeout(() => {
         const r = resultsMascot.getBoundingClientRect();
         if (r.width) launchConfetti(r.left + r.width / 2, r.top + r.height / 2);

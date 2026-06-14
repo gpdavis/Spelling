@@ -66,11 +66,18 @@ The app tracks how many days in a row each kid has practised, identified by **na
 
 While today is in progress, the home and results screens show a progress line like `Today: ✅ Spelling · ⬜ Maths` (a subject ticks only once it's passed at ≥80%). Once both are ticked, the streak counter rolls forward. Missing a day (or only passing one subject for a day) breaks the streak — it resets to 0 and starts fresh the next time both subjects are passed. A run stays "live" as long as the most recent qualifying day was today or yesterday.
 
-At a 10-day streak the home and results screens show:
+### Prizes
 
-> 🍫 Send a screen shot of this to your parents to get a chocolate surprise!
+When a streak reaches a configured milestone, the home and results screens show a prize message; hitting one on the results screen also fires the looping victory sprite + a confetti burst. There are two tiers — a **small** prize and a **big** prize — and the milestone day counts and messages all live in [prizes.js](prizes.js):
 
-When the streak ticks over to exactly 10, the results screen also fires the looping victory sprite + a confetti burst.
+```js
+window.STREAK_PRIZES = {
+  small: { days: [10, 14, 23, 35, 48, 61, 79, 91], message: "🍫 …chocolate surprise!" },
+  big:   { days: [29, 57, 88],                      message: "🏆 …a BIG prize!" },
+};
+```
+
+The message shows when the streak length **equals** one of the listed days (so each milestone is a one-off celebration, not a permanent banner). A day count in `big` wins the big prize (a brighter gold card); otherwise, if it's in `small`, the small prize. Edit the lists to change when prizes appear.
 
 ### Streaks come from the Google Sheet
 
