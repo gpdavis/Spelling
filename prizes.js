@@ -10,10 +10,12 @@
     small: {
       days: [10, 14, 23, 35, 48, 61, 79, 91],
       message: "🍫 Send a screen shot of this to your parents to get a chocolate surprise!",
+      robot: "Images/RobotStreak.svg",
     },
     big: {
       days: [29, 57, 88],
       message: "🏆 Huge effort! Send a screen shot to your parents for a BIG prize!",
+      robot: "Images/RobotSuperStreak.svg",
     },
   };
 })();

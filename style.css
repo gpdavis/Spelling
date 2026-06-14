@@ -347,9 +347,14 @@ button.primary:hover { filter: brightness(1.1); }
 }
 
 .home-logo-svg {
-  width: 60%;
-  max-width: 240px;
+  width: 62%;
+  max-width: 250px;
   height: auto;
+  /* The robot is a black-on-white design, so sit it on a light rounded tile
+     to read against the dark card and show its full SPELLATRON banner. */
+  background: #f5f0e8;
+  border-radius: 18px;
+  padding: 12px;
 }
 
 .mascot-stage {
@@ -437,6 +442,21 @@ button.primary:hover { filter: brightness(1.1); }
   border-color: #fde68a;
   font-size: 1.15rem;
   box-shadow: 0 8px 22px rgba(217, 119, 6, 0.5);
+}
+
+/* Animated celebration robot shown with a prize message. */
+.prize-robot {
+  display: block;
+  width: 128px;
+  height: auto;
+  margin: 0 auto 0.6rem;
+  background: #f5f0e8;
+  border-radius: 14px;
+  padding: 8px;
+}
+
+.chocolate-prize.big .prize-robot {
+  width: 150px;
 }
 
 /* ---- confetti ---- */

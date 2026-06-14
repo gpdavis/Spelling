@@ -410,8 +410,19 @@
     streakEl.classList.remove("hidden");
 
     const prize = prizeForCount(count);
+    chocolateEl.textContent = "";
     if (prize) {
-      chocolateEl.textContent = prize.message;
+      if (prize.robot) {
+        const img = document.createElement("img");
+        img.className = "prize-robot";
+        img.src = prize.robot;
+        img.alt = "";
+        chocolateEl.appendChild(img);
+      }
+      const msg = document.createElement("div");
+      msg.className = "prize-msg";
+      msg.textContent = prize.message;
+      chocolateEl.appendChild(msg);
       chocolateEl.classList.toggle("big", prize === PRIZES.big);
       chocolateEl.classList.remove("hidden");
     } else {

@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 230" role="img" aria-label="Spellatron">
+  <style>
+    #r1-body { animation: bob 1.2s ease-in-out infinite alternate; transform-origin: center bottom; }
+    #r1-head { animation: headTilt 2.4s ease-in-out infinite alternate; transform-origin: center bottom; }
+    #r1-arm-l { animation: idleArmL 1.2s ease-in-out infinite alternate; transform-origin: 100% 50%; }
+    #r1-arm-r { animation: idleArmR 1.2s ease-in-out infinite alternate; transform-origin: 0% 50%; }
+    #r1-antenna { animation: antennaPing 2s ease-in-out infinite; transform-origin: center bottom; }
+    #r1-eye-l { animation: blink 3s ease-in-out infinite; transform-origin: center center; }
+    #r1-eye-r { animation: blink 3s ease-in-out infinite 0.1s; transform-origin: center center; }
+    @keyframes bob { from { transform: translateY(0); } to { transform: translateY(-6px); } }
+    @keyframes headTilt { from { transform: rotate(-3deg); } to { transform: rotate(3deg); } }
+    @keyframes idleArmL { from { transform: rotate(0deg); } to { transform: rotate(10deg); } }
+    @keyframes idleArmR { from { transform: rotate(0deg); } to { transform: rotate(-10deg); } }
+    @keyframes antennaPing { 0%, 80% { transform: scale(1); } 90% { transform: scale(1.4); } 100% { transform: scale(1); } }
+    @keyframes blink { 0%, 88%, 100% { transform: scaleY(1); } 92% { transform: scaleY(0.05); } }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; } }
+  </style>
+  <defs>
+    <pattern id="h1" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="6" stroke="#ddd" stroke-width="1"></line>
+    </pattern>
+  </defs>
+  <circle cx="100" cy="100" r="92" fill="white" stroke="black" stroke-width="3.5"></circle>
+  <circle cx="100" cy="100" r="88" fill="url(#h1)"></circle>
+  <polygon points="22,63 24,69 30,69 25,73 27,79 22,75 17,79 19,73 14,69 20,69" fill="black"></polygon>
+  <polygon points="178,63 180,69 186,69 181,73 183,79 178,75 173,79 175,73 170,69 176,69" fill="black"></polygon>
+
+  <g id="r1-antenna">
+    <rect x="96" y="16" width="8" height="14" rx="2" fill="white" stroke="black" stroke-width="2.5"></rect>
+    <circle cx="100" cy="13" r="7" fill="white" stroke="black" stroke-width="2.5"></circle>
+    <circle cx="98" cy="11" r="2" fill="black"></circle>
+  </g>
+
+  <g id="r1-head">
+    <rect x="52" y="28" width="96" height="62" rx="8" fill="white" stroke="black" stroke-width="3"></rect>
+    <rect x="62" y="37" width="76" height="28" rx="4" fill="#f0f0f0" stroke="black" stroke-width="2"></rect>
+    <g id="r1-eye-l" style="transform-box: fill-box;">
+      <rect x="66" y="41" width="26" height="20" rx="3" fill="white" stroke="black" stroke-width="2"></rect>
+      <circle cx="79" cy="51" r="6" fill="black"></circle>
+      <circle cx="77" cy="49" r="1.8" fill="white"></circle>
+    </g>
+    <g id="r1-eye-r" style="transform-box: fill-box;">
+      <rect x="108" y="41" width="26" height="20" rx="3" fill="white" stroke="black" stroke-width="2"></rect>
+      <circle cx="121" cy="51" r="6" fill="black"></circle>
+      <circle cx="119" cy="49" r="1.8" fill="white"></circle>
+    </g>
+    <rect x="62" y="71" width="76" height="14" rx="3" fill="black"></rect>
+    <text x="100" y="82" font-family="Courier New" font-size="10" font-weight="bold" fill="white" text-anchor="middle" letter-spacing="2">S-P-E-L-L</text>
+  </g>
+
+  <rect x="88" y="90" width="24" height="12" rx="2" fill="white" stroke="black" stroke-width="2.5"></rect>
+
+  <g id="r1-body">
+    <g id="r1-arm-l" style="transform-box: fill-box;">
+      <rect x="26" y="104" width="26" height="12" rx="5" fill="white" stroke="black" stroke-width="2.5"></rect>
+      <circle cx="20" cy="110" r="9" fill="white" stroke="black" stroke-width="2.5"></circle>
+    </g>
+    <g id="r1-arm-r" style="transform-box: fill-box;">
+      <rect x="148" y="104" width="26" height="12" rx="5" fill="white" stroke="black" stroke-width="2.5"></rect>
+      <circle cx="180" cy="110" r="9" fill="white" stroke="black" stroke-width="2.5"></circle>
+    </g>
+    <rect x="60" y="102" width="80" height="48" rx="6" fill="white" stroke="black" stroke-width="3"></rect>
+    <rect x="72" y="111" width="56" height="32" rx="3" fill="#f0f0f0" stroke="black" stroke-width="1.5"></rect>
+    <circle cx="77" cy="116" r="3" fill="white" stroke="black" stroke-width="1.5"></circle>
+    <circle cx="123" cy="116" r="3" fill="white" stroke="black" stroke-width="1.5"></circle>
+    <circle cx="77" cy="138" r="3" fill="white" stroke="black" stroke-width="1.5"></circle>
+    <circle cx="123" cy="138" r="3" fill="white" stroke="black" stroke-width="1.5"></circle>
+    <polygon points="100,116 103,124 111,124 105,129 107,137 100,132 93,137 95,129 89,124 97,124" fill="black"></polygon>
+  </g>
+
+  <line x1="10" y1="168" x2="190" y2="168" stroke="black" stroke-width="2"></line>
+  <line x1="10" y1="172" x2="190" y2="172" stroke="black" stroke-width="0.5"></line>
+  <text x="100" y="190" font-family="Impact, sans-serif" font-size="18" fill="black" text-anchor="middle" letter-spacing="4">SPELLATRON</text>
+  <line x1="10" y1="196" x2="190" y2="196" stroke="black" stroke-width="0.5"></line>
+  <line x1="10" y1="200" x2="190" y2="200" stroke="black" stroke-width="2"></line>
+  <polygon points="10,184 15,179 20,184 15,189" fill="black"></polygon>
+  <polygon points="180,184 185,179 190,184 185,189" fill="black"></polygon>
+</svg>

@@ -1,0 +1,102 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 250" role="img" aria-label="Super streak robot">
+  <style>
+    #r3-whole { animation: crazyShake 0.15s ease-in-out infinite alternate; transform-origin: center; }
+    #r3-head { animation: headSpin 0.4s ease-in-out infinite alternate; transform-origin: center; }
+    #r3-arm-l { animation: flailL 0.2s ease-in-out infinite alternate; transform-origin: 100% 50%; }
+    #r3-arm-r { animation: flailR 0.2s ease-in-out infinite alternate; transform-origin: 0% 50%; }
+    #r3-eye-l { animation: eyeSwirl 1s linear infinite; transform-origin: 39px 62px; }
+    #r3-eye-r { animation: eyeSwirl 1s linear infinite reverse; transform-origin: 81px 62px; }
+    #r3-antenna { animation: antennaCrazy 0.1s ease-in-out infinite alternate; transform-origin: center bottom; }
+    .zap { animation: zapFlash 0.4s ease-in-out infinite; opacity: 0; }
+    .zap1 { animation-delay: 0s; } .zap2 { animation-delay: 0.2s; }
+    #r3-border { animation: borderWobble 0.3s ease-in-out infinite alternate; transform-origin: 110px 95px; }
+    #r3-exclaim { animation: excShake 0.15s ease-in-out infinite alternate; transform-origin: center; }
+    @keyframes crazyShake { from { transform: translate(-3px, -2px) rotate(-2deg); } to { transform: translate(3px, 2px) rotate(2deg); } }
+    @keyframes headSpin { from { transform: rotate(-12deg); } to { transform: rotate(12deg); } }
+    @keyframes flailL { from { transform: rotate(-70deg); } to { transform: rotate(-20deg); } }
+    @keyframes flailR { from { transform: rotate(70deg); } to { transform: rotate(20deg); } }
+    @keyframes eyeSwirl { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes antennaCrazy { from { transform: rotate(-25deg) scaleY(1.3); } to { transform: rotate(25deg) scaleY(0.8); } }
+    @keyframes zapFlash { 0% { opacity: 0; } 50% { opacity: 1; } 100% { opacity: 0; } }
+    @keyframes borderWobble { from { transform: scale(1) rotate(-1deg); } to { transform: scale(1.03) rotate(1deg); } }
+    @keyframes excShake { from { transform: scale(1) rotate(-10deg); } to { transform: scale(1.2) rotate(10deg); } }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; } .zap { opacity: 1; } }
+  </style>
+  <defs>
+    <pattern id="h3" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="6" stroke="#333" stroke-width="1.2"></line>
+    </pattern>
+  </defs>
+
+  <text class="zap zap1" x="12" y="60" font-size="22" fill="black">⚡</text>
+  <text class="zap zap2" x="178" y="55" font-size="22" fill="black">⚡</text>
+
+  <g id="r3-border">
+    <polygon points="110,4 126,16 148,6 152,24 174,18 170,38 192,40 180,56 200,68 182,80 196,98 176,100 182,122 160,116 158,138 138,126 124,144 110,130 96,144 82,126 62,138 60,116 38,122 44,100 24,98 38,80 20,68 40,56 28,40 50,38 46,18 68,24 72,6 94,16" fill="white" stroke="black" stroke-width="3.5"></polygon>
+    <polygon points="110,4 126,16 148,6 152,24 174,18 170,38 192,40 180,56 200,68 182,80 196,98 176,100 182,122 160,116 158,138 138,126 124,144 110,130 96,144 82,126 62,138 60,116 38,122 44,100 24,98 38,80 20,68 40,56 28,40 50,38 46,18 68,24 72,6 94,16" fill="url(#h3)" stroke="none"></polygon>
+  </g>
+
+  <g id="r3-whole">
+    <g id="r3-antenna">
+      <rect x="107" y="14" width="6" height="12" rx="2" fill="white" stroke="black" stroke-width="2"></rect>
+      <polygon points="110,8 115,18 111,18 116,28 104,16 109,16" fill="black"></polygon>
+    </g>
+
+    <g id="r3-head" style="transform-box: fill-box; transform-origin: 110px 60px;">
+      <rect x="66" y="26" width="88" height="60" rx="8" fill="white" stroke="black" stroke-width="3"></rect>
+
+      <g id="r3-eye-l" style="transform-box: fill-box;">
+        <rect x="72" y="33" width="24" height="18" rx="3" fill="white" stroke="black" stroke-width="2"></rect>
+        <line x1="76" y1="36" x2="92" y2="48" stroke="black" stroke-width="3" stroke-linecap="round"></line>
+        <line x1="92" y1="36" x2="76" y2="48" stroke="black" stroke-width="3" stroke-linecap="round"></line>
+      </g>
+
+      <g id="r3-eye-r" style="transform-box: fill-box;">
+        <rect x="124" y="33" width="24" height="18" rx="3" fill="white" stroke="black" stroke-width="2"></rect>
+        <circle cx="136" cy="42" r="7" fill="none" stroke="black" stroke-width="2"></circle>
+        <circle cx="136" cy="42" r="4" fill="none" stroke="black" stroke-width="1.5"></circle>
+        <circle cx="136" cy="42" r="1.5" fill="black"></circle>
+      </g>
+
+      <rect x="72" y="56" width="76" height="24" rx="3" fill="black"></rect>
+      <polyline points="76,68 82,60 89,68 96,60 103,68 110,60 117,68 124,60 131,68 138,60 144,68" stroke="white" stroke-width="2.5" fill="none" stroke-linecap="round" stroke-linejoin="round"></polyline>
+    </g>
+
+    <rect x="100" y="86" width="20" height="10" rx="2" fill="white" stroke="black" stroke-width="2.5"></rect>
+
+    <g id="r3-arm-l" style="transform-box: fill-box; transform-origin: 90px 100px;">
+      <rect x="42" y="94" width="48" height="12" rx="5" fill="white" stroke="black" stroke-width="2.5"></rect>
+      <circle cx="36" cy="100" r="10" fill="white" stroke="black" stroke-width="2.5"></circle>
+    </g>
+    <g id="r3-arm-r" style="transform-box: fill-box; transform-origin: 130px 100px;">
+      <rect x="130" y="94" width="48" height="12" rx="5" fill="white" stroke="black" stroke-width="2.5"></rect>
+      <circle cx="184" cy="100" r="10" fill="white" stroke="black" stroke-width="2.5"></circle>
+    </g>
+
+    <rect x="74" y="96" width="72" height="48" rx="6" fill="white" stroke="black" stroke-width="3"></rect>
+    <rect x="83" y="104" width="54" height="32" rx="2" fill="black" stroke="black" stroke-width="1.5"></rect>
+    <text x="110" y="116" font-family="Impact, sans-serif" font-size="9" fill="white" text-anchor="middle" letter-spacing="2">SUPER</text>
+    <polygon points="110,120 113,128 121,128 115,133 117,141 110,136 103,141 105,133 99,128 107,128" fill="white"></polygon>
+    <line x1="110" y1="117" x2="110" y2="112" stroke="white" stroke-width="1.5"></line>
+    <line x1="120" y1="121" x2="125" y2="117" stroke="white" stroke-width="1.5"></line>
+    <line x1="100" y1="121" x2="95" y2="117" stroke="white" stroke-width="1.5"></line>
+  </g>
+
+  <g id="r3-exclaim">
+    <text x="30" y="85" font-family="Impact" font-size="24" font-weight="900" fill="black" transform="rotate(-25,30,85)">!</text>
+    <text x="178" y="80" font-family="Impact" font-size="24" font-weight="900" fill="black" transform="rotate(20,178,80)">!</text>
+  </g>
+
+  <polygon points="30,35 32,41 38,41 33,45 35,51 30,47 25,51 27,45 22,41 28,41" fill="black"></polygon>
+  <polygon points="190,30 192,36 198,36 193,40 195,46 190,42 185,46 187,40 182,36 188,36" fill="black"></polygon>
+  <polygon points="185,120 187,126 193,126 188,130 190,136 185,132 180,136 182,130 177,126 183,126" fill="black"></polygon>
+
+  <line x1="5" y1="160" x2="215" y2="160" stroke="black" stroke-width="2.5"></line>
+  <line x1="5" y1="164" x2="215" y2="164" stroke="black" stroke-width="0.8"></line>
+  <text x="110" y="182" font-family="Impact, sans-serif" font-size="15" fill="black" text-anchor="middle" letter-spacing="3">SPELLATRON</text>
+  <text x="110" y="197" font-family="Impact, sans-serif" font-size="11" fill="black" text-anchor="middle" letter-spacing="2">★ SUPER STREAK! ★</text>
+  <line x1="5" y1="203" x2="215" y2="203" stroke="black" stroke-width="0.8"></line>
+  <line x1="5" y1="207" x2="215" y2="207" stroke="black" stroke-width="2.5"></line>
+  <polygon points="5,189 11,183 17,189 11,195" fill="black"></polygon>
+  <polygon points="203,189 209,183 215,189 209,195" fill="black"></polygon>
+</svg>

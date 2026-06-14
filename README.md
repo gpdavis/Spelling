@@ -72,12 +72,14 @@ When a streak reaches a configured milestone, the home and results screens show 
 
 ```js
 window.STREAK_PRIZES = {
-  small: { days: [10, 14, 23, 35, 48, 61, 79, 91], message: "🍫 …chocolate surprise!" },
-  big:   { days: [29, 57, 88],                      message: "🏆 …a BIG prize!" },
+  small: { days: [10, 14, 23, 35, 48, 61, 79, 91], message: "🍫 …chocolate surprise!", robot: "Images/RobotStreak.svg" },
+  big:   { days: [29, 57, 88],                      message: "🏆 …a BIG prize!",         robot: "Images/RobotSuperStreak.svg" },
 };
 ```
 
-The message shows when the streak length **equals** one of the listed days (so each milestone is a one-off celebration, not a permanent banner). A day count in `big` wins the big prize (a brighter gold card); otherwise, if it's in `small`, the small prize. Edit the lists to change when prizes appear.
+The message (and its animated `robot`) shows when the streak length **equals** one of the listed days (so each milestone is a one-off celebration, not a permanent banner). A day count in `big` wins the big prize (a brighter gold card); otherwise, if it's in `small`, the small prize. Edit the lists to change when prizes appear.
+
+The prize robots, and the animated home-screen logo ([Images/RobotHome.svg](Images/RobotHome.svg)), are self-contained SVGs with their CSS animations embedded — referenced via `<img>` so they animate without violating the page's `style-src 'self'` CSP.
 
 ### Streaks come from the Google Sheet
 
