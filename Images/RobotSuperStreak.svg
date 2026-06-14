@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 250" role="img" aria-label="Super streak robot">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 226" role="img" aria-label="Super streak robot">
   <style>
     #r3-whole { animation: crazyShake 0.15s ease-in-out infinite alternate; transform-origin: center; }
     #r3-head { animation: headSpin 0.4s ease-in-out infinite alternate; transform-origin: center; }
@@ -91,12 +91,15 @@
   <polygon points="190,30 192,36 198,36 193,40 195,46 190,42 185,46 187,40 182,36 188,36" fill="black"></polygon>
   <polygon points="185,120 187,126 193,126 188,130 190,136 185,132 180,136 182,130 177,126 183,126" fill="black"></polygon>
 
-  <line x1="5" y1="160" x2="215" y2="160" stroke="black" stroke-width="2.5"></line>
-  <line x1="5" y1="164" x2="215" y2="164" stroke="black" stroke-width="0.8"></line>
-  <text x="110" y="182" font-family="Impact, sans-serif" font-size="15" fill="black" text-anchor="middle" letter-spacing="3">SPELLATRON</text>
-  <text x="110" y="197" font-family="Impact, sans-serif" font-size="11" fill="black" text-anchor="middle" letter-spacing="2">★ SUPER STREAK! ★</text>
-  <line x1="5" y1="203" x2="215" y2="203" stroke="black" stroke-width="0.8"></line>
-  <line x1="5" y1="207" x2="215" y2="207" stroke="black" stroke-width="2.5"></line>
-  <polygon points="5,189 11,183 17,189 11,195" fill="black"></polygon>
-  <polygon points="203,189 209,183 215,189 209,195" fill="black"></polygon>
+  <!-- Title banner, nudged clear of the zigzag shape (bottom at y≈144) -->
+  <g transform="translate(0,14)">
+    <line x1="5" y1="160" x2="215" y2="160" stroke="black" stroke-width="2.5"></line>
+    <line x1="5" y1="164" x2="215" y2="164" stroke="black" stroke-width="0.8"></line>
+    <text x="110" y="182" font-family="Impact, sans-serif" font-size="15" fill="black" text-anchor="middle" letter-spacing="3">SPELLATRON</text>
+    <text x="110" y="197" font-family="Impact, sans-serif" font-size="11" fill="black" text-anchor="middle" letter-spacing="2">★ SUPER STREAK! ★</text>
+    <line x1="5" y1="203" x2="215" y2="203" stroke="black" stroke-width="0.8"></line>
+    <line x1="5" y1="207" x2="215" y2="207" stroke="black" stroke-width="2.5"></line>
+    <polygon points="5,189 11,183 17,189 11,195" fill="black"></polygon>
+    <polygon points="203,189 209,183 215,189 209,195" fill="black"></polygon>
+  </g>
 </svg>
