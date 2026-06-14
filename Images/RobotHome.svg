@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 230" role="img" aria-label="Spellatron">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 250" role="img" aria-label="Spellatron">
   <style>
     #r1-body { animation: bob 1.2s ease-in-out infinite alternate; transform-origin: center bottom; }
     #r1-head { animation: headTilt 2.4s ease-in-out infinite alternate; transform-origin: center bottom; }
@@ -68,11 +68,14 @@
     <polygon points="100,116 103,124 111,124 105,129 107,137 100,132 93,137 95,129 89,124 97,124" fill="black"></polygon>
   </g>
 
-  <line x1="10" y1="168" x2="190" y2="168" stroke="black" stroke-width="2"></line>
-  <line x1="10" y1="172" x2="190" y2="172" stroke="black" stroke-width="0.5"></line>
-  <text x="100" y="190" font-family="Impact, sans-serif" font-size="18" fill="black" text-anchor="middle" letter-spacing="4">SPELLATRON</text>
-  <line x1="10" y1="196" x2="190" y2="196" stroke="black" stroke-width="0.5"></line>
-  <line x1="10" y1="200" x2="190" y2="200" stroke="black" stroke-width="2"></line>
-  <polygon points="10,184 15,179 20,184 15,189" fill="black"></polygon>
-  <polygon points="180,184 185,179 190,184 185,189" fill="black"></polygon>
+  <!-- Title banner, shifted clear of the circle (bottom at y=192) -->
+  <g transform="translate(0,42)">
+    <line x1="10" y1="168" x2="190" y2="168" stroke="black" stroke-width="2"></line>
+    <line x1="10" y1="172" x2="190" y2="172" stroke="black" stroke-width="0.5"></line>
+    <text x="100" y="190" font-family="Impact, sans-serif" font-size="18" fill="black" text-anchor="middle" letter-spacing="4">SPELLATRON</text>
+    <line x1="10" y1="196" x2="190" y2="196" stroke="black" stroke-width="0.5"></line>
+    <line x1="10" y1="200" x2="190" y2="200" stroke="black" stroke-width="2"></line>
+    <polygon points="10,184 15,179 20,184 15,189" fill="black"></polygon>
+    <polygon points="180,184 185,179 190,184 185,189" fill="black"></polygon>
+  </g>
 </svg>
