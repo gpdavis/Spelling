@@ -721,9 +721,65 @@
     return svg;
   }
 
+  // Analogue clock face for "tell the time" questions. shape = { type, h, m }.
+  function renderClockShape(shape) {
+    const cx = 100, cy = 100, r = 88;
+    const h = Number(shape.h) || 0;
+    const m = Number(shape.m) || 0;
+    const svg = svgEl("svg", { viewBox: "0 0 200 200", xmlns: SVG_NS, role: "img" });
+
+    svg.appendChild(svgEl("circle", {
+      cx, cy, r,
+      fill: "rgba(129, 140, 248, 0.10)",
+      stroke: "currentColor",
+      "stroke-width": "3",
+    }));
+
+    // Hour ticks + numbers 1–12
+    for (let i = 1; i <= 12; i++) {
+      const ang = (i * 30) * Math.PI / 180;
+      const sin = Math.sin(ang), cos = Math.cos(ang);
+      const inner = r - (i % 3 === 0 ? 12 : 8);
+      svg.appendChild(svgEl("line", {
+        x1: cx + r * sin, y1: cy - r * cos,
+        x2: cx + inner * sin, y2: cy - inner * cos,
+        stroke: "currentColor",
+        "stroke-width": i % 3 === 0 ? "3" : "1.5",
+      }));
+      const nr = r - 26;
+      const num = svgEl("text", {
+        x: cx + nr * sin, y: cy - nr * cos + 6,
+        "text-anchor": "middle",
+        fill: "currentColor",
+        "font-size": "17",
+        "font-weight": "600",
+      });
+      num.textContent = String(i);
+      svg.appendChild(num);
+    }
+
+    // Hands: 12 o'clock is straight up; angle grows clockwise.
+    const minAng = (m % 60) * 6 * Math.PI / 180;
+    const hourAng = (((h % 12) + m / 60) * 30) * Math.PI / 180;
+    const hourLen = r * 0.5, minLen = r * 0.78;
+    svg.appendChild(svgEl("line", {
+      x1: cx, y1: cy,
+      x2: cx + hourLen * Math.sin(hourAng), y2: cy - hourLen * Math.cos(hourAng),
+      stroke: "currentColor", "stroke-width": "5", "stroke-linecap": "round",
+    }));
+    svg.appendChild(svgEl("line", {
+      x1: cx, y1: cy,
+      x2: cx + minLen * Math.sin(minAng), y2: cy - minLen * Math.cos(minAng),
+      stroke: "currentColor", "stroke-width": "3", "stroke-linecap": "round",
+    }));
+    svg.appendChild(svgEl("circle", { cx, cy, r: "4.5", fill: "currentColor" }));
+    return svg;
+  }
+
   function renderShape(shape) {
     if (!shape || !shape.type) return null;
     if (shape.type === "rectangle") return renderRectangleShape(shape);
+    if (shape.type === "clock") return renderClockShape(shape);
     return null;
   }
 
@@ -766,6 +822,14 @@
       }
       questionTextEl.textContent = cur.question;
       questionTextEl.classList.remove("hidden");
+      // Clock answers need a colon / words, so switch off the numeric keypad.
+      if (cur.shape && cur.shape.type === "clock") {
+        answerInput.setAttribute("inputmode", "text");
+        answerInput.setAttribute("placeholder", "e.g. 3:30 or half past 3");
+      } else {
+        answerInput.setAttribute("inputmode", "numeric");
+        answerInput.setAttribute("placeholder", "Type the answer here");
+      }
       if (cur.aid === "numberline") {
         ensureNumberLine();
         numberLineEl.classList.remove("hidden");
@@ -823,8 +887,48 @@
       .replace(/−/g, "-");
   }
 
+  // Minutes-since-12 (0–719) so equivalent clock readings compare equal.
+  function timeToMinutes(h, m) {
+    return (((h % 12) + 12) % 12) * 60 + ((m % 60) + 60) % 60;
+  }
+
+  const WORD_NUMS = { one: 1, two: 2, three: 3, four: 4, five: 5, six: 6,
+    seven: 7, eight: 8, nine: 9, ten: 10, eleven: 11, twelve: 12 };
+
+  // Parse a kid's time answer to minutes-since-12, accepting both digital
+  // ("3:30", "3.30", "3") and spoken forms ("half past 3", "quarter to 4",
+  // "3 o'clock"). Returns null if it isn't a recognisable time.
+  function parseTimeGuess(raw) {
+    const s = String(raw).trim().toLowerCase().replace(/['’]/g, "").replace(/\s+/g, " ");
+    const toNum = (tok) => (/^\d+$/.test(tok) ? parseInt(tok, 10) : WORD_NUMS[tok]);
+    let mt;
+    if ((mt = s.match(/^half past (\w+)$/)))                 { const h = toNum(mt[1]); return h ? timeToMinutes(h, 30) : null; }
+    if ((mt = s.match(/^(?:a )?quarter past (\w+)$/)))       { const h = toNum(mt[1]); return h ? timeToMinutes(h, 15) : null; }
+    if ((mt = s.match(/^(?:a )?quarter to (\w+)$/)))         { const h = toNum(mt[1]); return h ? timeToMinutes(h - 1, 45) : null; }
+    if ((mt = s.match(/^(\w+) o?clock$/)))                   { const h = toNum(mt[1]); return h ? timeToMinutes(h, 0) : null; }
+    if ((mt = s.match(/^(\d{1,2})\s*[:.]\s*(\d{2})$/)))      { return timeToMinutes(parseInt(mt[1], 10), parseInt(mt[2], 10)); }
+    if ((mt = s.match(/^(\d{1,2})$/)))                       { return timeToMinutes(parseInt(mt[1], 10), 0); }
+    return null;
+  }
+
+  // "half past 3", "quarter to 4", "3 o'clock" — for showing the answer.
+  function clockPhrase(h, m) {
+    const hr = ((h - 1 + 12) % 12) + 1;
+    const next = (hr % 12) + 1;
+    if (m === 0) return `${hr} o'clock`;
+    if (m === 15) return `quarter past ${hr}`;
+    if (m === 30) return `half past ${hr}`;
+    if (m === 45) return `quarter to ${next}`;
+    return `${hr}:${String(m).padStart(2, "0")}`;
+  }
+
   function checkAnswer(guess, cur) {
     if (session.subject === "maths") {
+      // Clock questions compare by clock time, not as plain numbers.
+      if (cur.shape && cur.shape.type === "clock") {
+        const g = parseTimeGuess(guess);
+        return g !== null && g === timeToMinutes(cur.shape.h, cur.shape.m);
+      }
       const g = normaliseMathsAnswer(guess);
       const t = normaliseMathsAnswer(cur.answer);
       if (g === t) return true;
@@ -837,6 +941,9 @@
 
   function correctAnswerText(cur) {
     if (session.subject !== "maths") return `"${cur.word}"`;
+    if (cur.shape && cur.shape.type === "clock") {
+      return `${cur.answer} (${clockPhrase(cur.shape.h, cur.shape.m)})`;
+    }
     if (cur.shape) {
       return cur.unit ? `${cur.answer} ${cur.unit}` : String(cur.answer);
     }

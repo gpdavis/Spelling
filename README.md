@@ -39,7 +39,7 @@ Aligned to Australian Curriculum v9 Mathematics. Each year has 3–6 topics; a s
 
 - **Kindergarten** — Count forward · One more / one less · Add to 5
 - **Year 1** — Add and subtract to 20 · Doubles and halves · Skip count (2s, 5s, 10s)
-- **Year 2** — Skip count by 2s · Skip count by 3s, 5s, 10s · Backwards skip count
+- **Year 2** — Skip count (2s/3s/4s/5s/10s, forwards & back) · Simple +/− with a number line · Friends to 10 · Telling the time on an analogue clock (to the quarter-hour)
 - **Year 3** — × facts (2s, 3s, 4s, 5s, 10s) · Division facts · Unit fractions
 - **Year 4** — × facts (6s, 7s, 8s, 9s) · Mixed × tables to 10×10 · Division facts · 11s & 12s stretch
 - **Year 5** — × and ÷ by 10/100/1000 · Fraction ↔ decimal ↔ percent · Perimeter and metric conversions

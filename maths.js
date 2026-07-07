@@ -91,6 +91,20 @@
         : { question: `What goes with ${a} to make 10?`, answer: String(10 - a), context: "Friends to 10" };
     },
 
+    // ---- Telling the time (Y2: to the quarter-hour, AC9M2M03) ----
+    // Renders an analogue clock (see shape.type "clock" in app.js). The answer
+    // is the digital time; the app also accepts "half past 3" style phrasing.
+    clockToQuarter() {
+      const h = randInt(1, 12);
+      const m = pick([0, 15, 30, 45]);
+      return {
+        question: "What time is it?",
+        answer: `${h}:${String(m).padStart(2, "0")}`,
+        shape: { type: "clock", h, m },
+        context: "Telling the time",
+      };
+    },
+
     // ---- Multiplication and division ----
     timesTables({ tables, maxMultiplier = 10 }) {
       const a = pick(tables);
@@ -132,7 +146,8 @@
       "Backwards skip count": { generator: "skipCount", args: { steps: [2, 3, 4, 5, 10], direction: "back" } },
       "Simple addition (with number line)": { generator: "y2AddNumberLine" },
       "Simple subtraction (with number line)": { generator: "y2SubNumberLine" },
-      "Friends to 10": { generator: "friendsToTen" }
+      "Friends to 10": { generator: "friendsToTen" },
+      "Telling the time (clock)": { generator: "clockToQuarter" }
     },
 
     "Year 3": {
