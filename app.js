@@ -42,7 +42,7 @@
   const STREAK_CACHE_KEY = "spelling.streakCache"; // last Sheet-derived day map (offline cache)
   const LOCAL_TODAY_KEY  = "spelling.localToday";  // optimistic "done today" overlay (this device)
   const WORDS_PER_SESSION = 10;
-  const WEEKLY_POOL_SIZE = 20;
+  const WEEKLY_POOL_SIZE = 25;
   // Both spelling and maths need this final score or better to earn the day's tick.
   const PASS_PCT = 0.8;
 

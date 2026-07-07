@@ -428,6 +428,61 @@ window.WORD_LISTS = {
       { word: "those",     sentence: "Look at those birds!",             emoji: "🐦" },
       { word: "year",      sentence: "We have a whole year of fun ahead.", emoji: "📅" },
       { word: "yesterday", sentence: "Yesterday we went to the zoo.",    emoji: "🦁" }
+    ],
+    "JADE": [
+      { word: "able",     sentence: "I am able to ride my bike." },
+      { word: "being",    sentence: "Thank you for being so kind." },
+      { word: "children", sentence: "The children played in the park.", emoji: "🧒" },
+      { word: "enough",   sentence: "Do we have enough milk?" },
+      { word: "five",     sentence: "I have five fingers on one hand.", emoji: "✋" },
+      { word: "instead",  sentence: "Let's walk instead of driving." },
+      { word: "need",     sentence: "I need a drink of water." },
+      { word: "sentence", sentence: "Write a sentence about your day." },
+      { word: "team",     sentence: "Our team won the game.", emoji: "🏅" },
+      { word: "until",    sentence: "Wait here until I come back." }
+    ],
+    "SILVER": [
+      { word: "above",    sentence: "The bird flew above the trees." },
+      { word: "across",   sentence: "We swam across the pool." },
+      { word: "below",    sentence: "The fish swam below the boat." },
+      { word: "between",  sentence: "Sit between your two friends." },
+      { word: "city",     sentence: "We drove into the big city.", emoji: "🏙️" },
+      { word: "class",    sentence: "My class has thirty students." },
+      { word: "even",     sentence: "The numbers were even, not odd." },
+      { word: "everyone", sentence: "Everyone clapped at the end." },
+      { word: "follow",   sentence: "Please follow me to the door." },
+      { word: "funny",    sentence: "The clown was very funny.", emoji: "🤡" },
+      { word: "knew",     sentence: "I knew the answer straight away.", homophone: true },
+      { word: "next",     sentence: "We will go to the shops next week." },
+      { word: "shopping", sentence: "We went shopping for new shoes.", emoji: "🛍️" },
+      { word: "thank",    sentence: "I want to thank you for the gift." },
+      { word: "upon",     sentence: "Once upon a time there was a king." }
+    ],
+    "MAUVE": [
+      { word: "against",    sentence: "Lean the ladder against the wall." },
+      { word: "blue",       sentence: "The sky is bright blue today.", emoji: "🔵", homophone: true },
+      { word: "close",      sentence: "Please close the door quietly." },
+      { word: "everything", sentence: "I packed everything in my bag." },
+      { word: "great",      sentence: "We had a great day at the beach.", homophone: true },
+      { word: "leave",      sentence: "We leave for school at eight." },
+      { word: "often",      sentence: "We often visit our grandparents." },
+      { word: "since",      sentence: "I have been awake since dawn." },
+      { word: "through",    sentence: "We walked through the tunnel.", homophone: true },
+      { word: "whenever",   sentence: "Call me whenever you like." },
+      { word: "later",      sentence: "I will finish it later today." }
+    ],
+    "AMBER": [
+      { word: "almost",   sentence: "We are almost at the top." },
+      { word: "bought",   sentence: "Mum bought a new umbrella." },
+      { word: "couldn't", sentence: "I couldn't find my other shoe." },
+      { word: "example",  sentence: "This is a good example of neat writing." },
+      { word: "group",    sentence: "A group of friends sat together.", emoji: "👥" },
+      { word: "left",     sentence: "Turn left at the corner." },
+      { word: "picture",  sentence: "She drew a picture of a cat.", emoji: "🖼️" },
+      { word: "someone",  sentence: "Someone left an umbrella here." },
+      { word: "together", sentence: "We built the model together." },
+      { word: "while",    sentence: "Read a book while you wait." },
+      { word: "number",   sentence: "Pick a number between one and ten.", emoji: "🔢" }
     ]
   },
 
