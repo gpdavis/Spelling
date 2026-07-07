@@ -542,7 +542,13 @@
   function buildSpellingSession(level) {
     const subs = lists[level] || {};
     const all = [];
-    Object.values(subs).forEach((arr) => arr.forEach((w) => all.push(w)));
+    // Words can carry an optional `weight` (default 1) — entered into the pool
+    // that many times so persistently-missed words come up more often, at the
+    // expense of words the kid already has solid.
+    Object.values(subs).forEach((arr) => arr.forEach((w) => {
+      const copies = Math.max(1, Math.round(w.weight || 1));
+      for (let i = 0; i < copies; i++) all.push(w);
+    }));
     if (!all.length) return [];
 
     const now = new Date();
@@ -562,7 +568,14 @@
 
   function buildMathsSession(level) {
     const subs = mathsLists[level] || {};
-    const entries = Object.entries(subs);
+    // Topics can carry an optional `weight` (default 1) — entered into the
+    // topic-picker that many times so weaker topics get asked about more
+    // often, at the expense of topics already mastered.
+    const entries = [];
+    Object.entries(subs).forEach((entry) => {
+      const copies = Math.max(1, Math.round(entry[1].weight || 1));
+      for (let i = 0; i < copies; i++) entries.push(entry);
+    });
     if (!entries.length) return [];
     const seen = new Set();
     const out = [];

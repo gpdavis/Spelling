@@ -16,6 +16,9 @@
   function pick(arr) {
     return arr[Math.floor(Math.random() * arr.length)];
   }
+  function formatThousands(n) {
+    return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
 
   const MATHS_GENERATORS = {
     // ---- Foundation / Kindergarten ----
@@ -91,6 +94,31 @@
         : { question: `What goes with ${a} to make 10?`, answer: String(10 - a), context: "Friends to 10" };
     },
 
+    // ---- Place value recognition to 9,999 (Y2) ----
+    // Uses a 4-digit number with distinct digits (and no leading zero) so
+    // "value of the digit X" questions always have one unambiguous answer.
+    placeValueTo9999() {
+      const digits = [];
+      while (digits.length < 4) {
+        const d = randInt(0, 9);
+        if (digits.length === 0 && d === 0) continue;
+        if (!digits.includes(d)) digits.push(d);
+      }
+      const [th, h, t, o] = digits;
+      const n = th * 1000 + h * 100 + t * 10 + o;
+      const formatted = formatThousands(n);
+      const places = [
+        { name: "thousands", digit: th, value: th * 1000 },
+        { name: "hundreds", digit: h, value: h * 100 },
+        { name: "tens", digit: t, value: t * 10 },
+        { name: "ones", digit: o, value: o },
+      ];
+      const place = pick(places);
+      return Math.random() < 0.5
+        ? { question: `What digit is in the ${place.name} place in ${formatted}?`, answer: String(place.digit), context: "Place value" }
+        : { question: `What is the value of the ${place.digit} in ${formatted}?`, answer: String(place.value), context: "Place value" };
+    },
+
     // ---- Telling the time (Y2: to the quarter-hour, AC9M2M03) ----
     // Renders an analogue clock (see shape.type "clock" in app.js). The answer
     // is the digital time; the app also accepts "half past 3" style phrasing.
@@ -140,13 +168,18 @@
       "Skip count (2s, 5s, 10s)": { generator: "skipCount", args: { steps: [2, 5, 10] } }
     },
 
+    // Weights below are tuned from results history: skip counting by 3s/4s and
+    // basic subtraction have been recurring misses, while 2s/5s/10s and simple
+    // addition are solid — so those weak spots come up more often without
+    // dropping the others entirely.
     "Year 2": {
-      "Skip count by 2s": { generator: "skipCount", args: { steps: [2] } },
-      "Skip count by 3s, 4s, 5s, 10s": { generator: "skipCount", args: { steps: [3, 4, 5, 10] } },
+      "Skip count by 2s, 5s, 10s": { generator: "skipCount", args: { steps: [2, 5, 10] } },
+      "Skip count by 3s, 4s": { generator: "skipCount", args: { steps: [3, 4] }, weight: 3 },
       "Backwards skip count": { generator: "skipCount", args: { steps: [2, 3, 4, 5, 10], direction: "back" } },
       "Simple addition (with number line)": { generator: "y2AddNumberLine" },
-      "Simple subtraction (with number line)": { generator: "y2SubNumberLine" },
+      "Simple subtraction (with number line)": { generator: "y2SubNumberLine", weight: 2 },
       "Friends to 10": { generator: "friendsToTen" },
+      "Place value to 9,999": { generator: "placeValueTo9999" },
       "Telling the time (clock)": { generator: "clockToQuarter" }
     },
 
@@ -172,11 +205,14 @@
       ]
     },
 
+    // Weighted toward Henry's actual trouble spots from results history
+    // (×6-9, ×11/12, division) — ×2-5/10 are already solid, so the general
+    // "mixed" revision stays in the pool but at a lower share.
     "Year 4": {
-      "× facts (6s, 7s, 8s, 9s)":   { generator: "timesTables", args: { tables: [6, 7, 8, 9] } },
+      "× facts (6s, 7s, 8s, 9s)":   { generator: "timesTables", args: { tables: [6, 7, 8, 9] }, weight: 3 },
       "Mixed × tables (to 10×10)":  { generator: "timesTables", args: { tables: [2, 3, 4, 5, 6, 7, 8, 9, 10] } },
-      "Division facts":             { generator: "divisionFacts", args: { tables: [2, 3, 4, 5, 6, 7, 8, 9, 10] } },
-      "× 11s and 12s (stretch)":    { generator: "timesTables", args: { tables: [11, 12], maxMultiplier: 12 } }
+      "Division facts":             { generator: "divisionFacts", args: { tables: [2, 3, 4, 5, 6, 7, 8, 9, 10] }, weight: 2 },
+      "× 11s and 12s (stretch)":    { generator: "timesTables", args: { tables: [11, 12], maxMultiplier: 12 }, weight: 2 }
     },
 
     "Year 5": {
