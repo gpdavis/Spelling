@@ -322,6 +322,24 @@ button.primary:hover { filter: brightness(1.1); }
   color: var(--muted);
 }
 
+.entry-answers {
+  margin-top: 0.4rem;
+  font-size: 0.9rem;
+}
+
+.entry-answers summary {
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.entry-answers ul {
+  margin: 0.4rem 0 0;
+  padding-left: 1.1rem;
+}
+
+.entry-answers .answer-correct { color: var(--good); }
+.entry-answers .answer-wrong   { color: var(--bad); }
+
 .empty {
   text-align: center;
   color: var(--muted);

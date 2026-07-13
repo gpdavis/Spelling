@@ -535,6 +535,7 @@
       endCorrect: 0,
       lastMissed: [],
       posted: false,
+      entries: [],
     };
     startSession(words, level, subject, subList);
   }
@@ -652,6 +653,7 @@
       i: 0,
       correct: 0,
       missed: [],
+      answers: [],
       name: nameInput.value.trim() || "friend",
       level: level || levelSelect.value,
       subject: subject || "spelling",
@@ -963,6 +965,10 @@
     return `${cur.question} = ${cur.answer}`;
   }
 
+  function promptText(cur) {
+    return session.subject === "maths" ? cur.question : cur.word;
+  }
+
   answerForm.addEventListener("submit", (e) => {
     e.preventDefault();
     const guess = answerInput.value.trim();
@@ -970,6 +976,12 @@
     const cur = current();
     const wasCorrect = checkAnswer(guess, cur);
     answerInput.value = "";
+    session.answers.push({
+      prompt: promptText(cur),
+      correctAnswer: correctAnswerText(cur),
+      userAnswer: guess,
+      correct: wasCorrect,
+    });
     if (wasCorrect) {
       session.correct += 1;
       feedback.textContent = "✅ Correct!";
@@ -979,8 +991,8 @@
       session.i += 1;
       setTimeout(advanceQuiz, 900);
     } else {
-      session.missed.push(cur);
-      feedback.textContent = `❌ The answer was ${correctAnswerText(cur)}.`;
+      session.missed.push({ ...cur, userAnswer: guess });
+      feedback.textContent = `❌ You answered "${guess}". The answer was ${correctAnswerText(cur)}.`;
       feedback.className = "bad";
       setQuizMascot("wrong");
       session.i += 1;
@@ -1021,9 +1033,12 @@
     missedList.innerHTML = "";
     session.missed.forEach((w) => {
       const li = document.createElement("li");
-      li.textContent = session.subject === "maths"
+      const correctText = session.subject === "maths"
         ? `${w.question} = ${w.answer}`
         : w.word;
+      li.textContent = w.userAnswer
+        ? `${correctText} (you answered: ${w.userAnswer})`
+        : correctText;
       missedList.appendChild(li);
     });
     retryBtn.disabled = session.missed.length === 0;
@@ -1102,6 +1117,59 @@
       data.append(FORM_FIELDS.missed, `Original: ${original}. Retries: ${a.retries}. ${remaining}`);
       fetch(FORM_SUBMIT_URL, { method: "POST", mode: "no-cors", body: data }).catch(() => {});
     } catch (e) { /* best effort */ }
+    markHistoryEntriesPosted(a.entries);
+  }
+
+  // Marks the given history rounds (by timestamp) as posted, so the startup
+  // catch-up in postStaleHistoryEntries() doesn't re-send them later.
+  function markHistoryEntriesPosted(timestamps) {
+    if (!timestamps || !timestamps.length) return;
+    const wanted = new Set(timestamps);
+    const all = loadHistory();
+    let changed = false;
+    all.forEach((e) => {
+      if (wanted.has(e.ts) && !e.posted) {
+        e.posted = true;
+        changed = true;
+      }
+    });
+    if (changed) localStorage.setItem(HISTORY_KEY, JSON.stringify(all));
+  }
+
+  const CATCH_UP_WINDOW_MS = 2 * 24 * 60 * 60 * 1000; // past 2 days
+
+  // On startup, catch up any locally-saved rounds that never made it to the
+  // results form — e.g. the tab was closed mid-attempt before postAttemptToForm
+  // ran. Each stale round is posted as its own row.
+  function postStaleHistoryEntries() {
+    const all = loadHistory();
+    const cutoff = Date.now() - CATCH_UP_WINDOW_MS;
+    const stale = all.filter((e) => e.ts >= cutoff && !e.posted);
+    if (!stale.length) return;
+    stale.forEach((e) => {
+      postHistoryEntryToForm(e);
+      e.posted = true;
+    });
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(all));
+  }
+
+  function postHistoryEntryToForm(e) {
+    try {
+      const total = e.total;
+      const pct = total ? Math.round((e.correct / total) * 100) : 0;
+      const levelLabel = e.subject === "maths"
+        ? `${e.level} · Maths${e.list ? " · " + e.list : ""}`
+        : `${e.level} · Spelling`;
+      const data = new FormData();
+      data.append(FORM_FIELDS.name,   e.name);
+      data.append(FORM_FIELDS.level,  levelLabel);
+      data.append(FORM_FIELDS.score,  String(e.correct));
+      data.append(FORM_FIELDS.total,  String(total));
+      data.append(FORM_FIELDS.pct,    String(pct));
+      const missedText = e.missed && e.missed.length ? `Missed: ${e.missed.join(", ")}` : "perfect";
+      data.append(FORM_FIELDS.missed, `(backfilled) ${missedText}`);
+      fetch(FORM_SUBMIT_URL, { method: "POST", mode: "no-cors", body: data }).catch(() => {});
+    } catch (e2) { /* best effort */ }
   }
 
   function saveSessionToHistory() {
@@ -1114,11 +1182,17 @@
       total: session.words.length,
       correct: session.correct,
       missed: session.missed.map((w) => w.word || w.question),
+      answers: session.answers,
+      posted: false,
     };
     const all = loadHistory();
     all.push(entry);
     const trimmed = all.slice(-500);
     localStorage.setItem(HISTORY_KEY, JSON.stringify(trimmed));
+    // Track this round against the in-progress attempt so that whenever the
+    // cumulative attempt is posted to the results form (which may happen much
+    // later, after further retries), this round gets marked posted too.
+    if (attempt) attempt.entries.push(entry.ts);
   }
 
   function loadHistory() {
@@ -1237,7 +1311,25 @@
     top.appendChild(score);
     li.appendChild(top);
 
-    if (e.missed && e.missed.length) {
+    if (e.answers && e.answers.length) {
+      const details = document.createElement("details");
+      details.className = "entry-answers";
+      const summary = document.createElement("summary");
+      summary.textContent = "See answers";
+      details.appendChild(summary);
+      const ul = document.createElement("ul");
+      e.answers.forEach((a) => {
+        const item = document.createElement("li");
+        item.className = a.correct ? "answer-correct" : "answer-wrong";
+        item.textContent = a.correct
+          ? `✅ ${a.prompt}`
+          : `❌ ${a.prompt} — wrote "${a.userAnswer}" (answer: ${a.correctAnswer})`;
+        ul.appendChild(item);
+      });
+      details.appendChild(ul);
+      li.appendChild(details);
+    } else if (e.missed && e.missed.length) {
+      // Older history entries were saved before per-answer detail existed.
       const m = document.createElement("div");
       m.className = "entry-missed";
       m.textContent = `Missed: ${e.missed.join(", ")}`;
@@ -1469,6 +1561,7 @@
   populateLevels();
   applySetupMode();
   refreshStreaksFromSheet();
+  postStaleHistoryEntries();
   checkForUpdate();
   setInterval(checkForUpdate, UPDATE_CHECK_INTERVAL_MS);
 })();
