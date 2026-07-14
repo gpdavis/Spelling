@@ -553,15 +553,30 @@
     // The week (Mon–Sun) has a single stable 20-word pool, so a kid practises
     // the same set all week. Seed by level + the week's Monday so each year
     // level gets its own pool and it only changes when a new week starts.
+    // `all` contains repeated entries for weighted words (see above), so pick
+    // unique words as we walk the shuffle rather than slicing it directly —
+    // otherwise a heavily-weighted word could land twice in the same pool.
     const weekRng = mulberry32(hashSeed(`${level}|week|${mondayKey(now)}`));
-    const weekPool = seededShuffle(all, weekRng)
-      .slice(0, Math.min(WEEKLY_POOL_SIZE, all.length));
+    const weekPool = pickUniqueWords(seededShuffle(all, weekRng), WEEKLY_POOL_SIZE);
 
     // Each day draws a stable 10 from that pool — same 10 all day (so retries
     // and repeat sessions reinforce the same words), a fresh draw each morning.
     const dayRng = mulberry32(hashSeed(`${level}|day|${dateKey(now)}`));
-    return seededShuffle(weekPool, dayRng)
-      .slice(0, Math.min(WORDS_PER_SESSION, weekPool.length));
+    return pickUniqueWords(seededShuffle(weekPool, dayRng), WORDS_PER_SESSION);
+  }
+
+  // Walks a shuffled (possibly weight-duplicated) word list and returns up to
+  // `n` entries with distinct `.word` values, in shuffle order.
+  function pickUniqueWords(shuffled, n) {
+    const seen = new Set();
+    const out = [];
+    for (const w of shuffled) {
+      if (out.length >= n) break;
+      if (seen.has(w.word)) continue;
+      seen.add(w.word);
+      out.push(w);
+    }
+    return out;
   }
 
   function buildMathsSession(level) {
