@@ -1206,8 +1206,13 @@
       data.append(FORM_FIELDS.score,  String(entry.correct));
       data.append(FORM_FIELDS.total,  String(total));
       data.append(FORM_FIELDS.pct,    String(pct));
-      const missedText = entry.missed.length ? `missed: ${entry.missed.join(", ")}` : "perfect";
-      data.append(FORM_FIELDS.missed, `${roundLabel} — ${missedText}`);
+      const questionsText = entry.answers && entry.answers.length
+        ? entry.answers.map((a) => a.correct
+            ? `✓ ${a.prompt}`
+            : `✗ ${a.prompt} (you: "${a.userAnswer}")`
+          ).join(", ")
+        : (entry.missed.length ? `missed: ${entry.missed.join(", ")}` : "perfect");
+      data.append(FORM_FIELDS.missed, `${roundLabel} — ${questionsText}`);
       fetch(FORM_SUBMIT_URL, { method: "POST", mode: "no-cors", body: data }).catch(() => {});
     } catch (e) { /* best effort */ }
   }
