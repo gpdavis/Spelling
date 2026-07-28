@@ -35,6 +35,7 @@
   const historyList     = $("history-list");
   const historySummary  = $("history-summary");
   const backHistoryBtn  = $("back-from-history-btn");
+  const stargazeBtn     = $("stargaze-btn");
 
   const HISTORY_KEY = "spelling.history";
   const NAME_KEY    = "spelling.name";
@@ -407,6 +408,23 @@
     return { count, todayDone };
   }
 
+  // ---- "stargaze" mode: hide the app to admire today's space background ----
+
+  function exitStargazing() {
+    document.body.classList.remove("stargazing");
+    stargazeBtn.textContent = "✨ Stargaze";
+  }
+
+  function setStargazeAvailable(available) {
+    stargazeBtn.classList.toggle("hidden", !available);
+    if (!available) exitStargazing();
+  }
+
+  stargazeBtn.addEventListener("click", () => {
+    const active = document.body.classList.toggle("stargazing");
+    stargazeBtn.textContent = active ? "↩ Back to Spellatron" : "✨ Stargaze";
+  });
+
   function renderStreakInto(name, year, streakEl, chocolateEl) {
     streakEl.textContent = "";
     const line = document.createElement("div");
@@ -417,6 +435,7 @@
       streakEl.appendChild(line);
       streakEl.classList.remove("hidden");
       chocolateEl.classList.add("hidden");
+      setStargazeAvailable(false);
       return;
     }
 
@@ -465,6 +484,8 @@
     } else {
       chocolateEl.classList.add("hidden");
     }
+
+    setStargazeAvailable(bothDone);
   }
 
   function refreshHomeStreak() {
@@ -1520,6 +1541,75 @@
     console.log("Cleared saved name and level. Refresh to see setup screen.");
   };
 
+  // ---- daily space background (NASA APOD) ----
+  //
+  // DEMO_KEY is rate-limited (~30/hr, 50/day per IP), so we cache the chosen
+  // image per calendar day in localStorage — normal use is one real fetch per
+  // device per day. Video-of-the-day entries have no still image, so on those
+  // days we pull a random image from the last year of the archive instead.
+  const APOD_API = "https://api.nasa.gov/planetary/apod";
+  const APOD_KEY = "DEMO_KEY";
+  const APOD_CACHE_KEY = "spelling.apodCache";
+  const APOD_RANDOM_ATTEMPTS = 5;
+
+  function todayStr() {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
+
+  function randomPastDateStr() {
+    const daysAgo = 1 + Math.floor(Math.random() * 365);
+    const d = new Date();
+    d.setDate(d.getDate() - daysAgo);
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+  }
+
+  async function fetchApod(dateStr) {
+    try {
+      const res = await fetch(`${APOD_API}?api_key=${APOD_KEY}&date=${dateStr}`);
+      if (!res.ok) return null;
+      return await res.json();
+    } catch (e) { return null; }
+  }
+
+  function applyApodBackground(imageUrl) {
+    document.body.style.backgroundImage =
+      `linear-gradient(180deg, rgba(11,18,32,0.15), rgba(11,18,32,0.55)), url("${imageUrl}")`;
+    document.body.style.backgroundSize = "cover";
+    document.body.style.backgroundPosition = "center";
+    document.body.style.backgroundAttachment = "fixed";
+  }
+
+  async function loadApodBackground() {
+    const today = todayStr();
+    let cache = null;
+    try { cache = JSON.parse(localStorage.getItem(APOD_CACHE_KEY) || "null"); } catch (e) { cache = null; }
+    if (cache && cache.date === today) {
+      if (cache.imageUrl) applyApodBackground(cache.imageUrl);
+      return;
+    }
+
+    const todayData = await fetchApod(today);
+    if (!todayData) return; // network hiccup / rate limit — don't cache, try again next load
+
+    // Deliberately using `url` (standard resolution, usually well under 1MB)
+    // rather than `hdurl`, which can be 5-10+ MB — far too heavy for a page
+    // background, especially on the tablets this app tends to run on.
+    let imageUrl = todayData.media_type === "image" ? todayData.url : null;
+
+    if (!imageUrl) {
+      for (let i = 0; i < APOD_RANDOM_ATTEMPTS && !imageUrl; i++) {
+        const pastData = await fetchApod(randomPastDateStr());
+        if (pastData && pastData.media_type === "image") {
+          imageUrl = pastData.url;
+        }
+      }
+    }
+
+    localStorage.setItem(APOD_CACHE_KEY, JSON.stringify({ date: today, imageUrl: imageUrl || null }));
+    if (imageUrl) applyApodBackground(imageUrl);
+  }
+
   // ---- auto-update on new deploys ----
   //
   // GitHub Pages sets ETag/Last-Modified headers on every file. We capture
@@ -1576,5 +1666,6 @@
   applySetupMode();
   refreshStreaksFromSheet();
   checkForUpdate();
+  loadApodBackground();
   setInterval(checkForUpdate, UPDATE_CHECK_INTERVAL_MS);
 })();
