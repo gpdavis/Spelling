@@ -432,6 +432,32 @@
 
   function refreshHomeStreak() {
     renderStreakInto(nameInput.value.trim(), levelSelect.value, homeStreakEl, homeChocolateEl);
+    maybeCelebrateHomePrize();
+  }
+
+  // Set true whenever the kid arrives at the home screen (boot / "New
+  // practice" / back from history) so the *next* streak render celebrates if
+  // a prize is active — replaying the animation each time they reopen the
+  // site on the prize day, not just the moment they first hit it. Left true
+  // across the initial cached render if the Sheet fetch hasn't landed yet, so
+  // the celebration still fires once the real streak count is known instead
+  // of silently missing it.
+  let pendingPrizeCelebration = false;
+
+  // Plays the prize animation (bounce + confetti) on the home screen's prize
+  // box. Only fires when `pendingPrizeCelebration` is armed, so typing a name
+  // or switching level/tab-refocus (which also call refreshHomeStreak) don't
+  // replay it mid-session.
+  function maybeCelebrateHomePrize() {
+    if (!pendingPrizeCelebration) return;
+    const prize = prizeForCount(getStreakStatus(nameInput.value.trim(), levelSelect.value).count);
+    if (!prize) return;
+    pendingPrizeCelebration = false;
+    homeChocolateEl.classList.remove("celebrate");
+    void homeChocolateEl.offsetWidth;
+    homeChocolateEl.classList.add("celebrate");
+    const rect = homeChocolateEl.getBoundingClientRect();
+    if (rect.width) launchConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2);
   }
 
   // ---- setup screen ----
@@ -465,6 +491,7 @@
     } else {
       expandSetup();
     }
+    pendingPrizeCelebration = true;
     refreshHomeStreak();
     maybeReloadForUpdate();
   }
