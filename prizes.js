@@ -13,7 +13,7 @@
       robot: "Images/RobotStreak.svg",
     },
     big: {
-      days: [29, 57, 88],
+      days: [29, 57, 88, 100],
       message: "🏆 Huge effort! Send a screen shot to your parents for a BIG prize!",
       robot: "Images/RobotSuperStreak.svg",
     },
