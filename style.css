@@ -18,10 +18,33 @@ body {
   margin: 0;
   font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   background: var(--bg);
-  background-image: var(--bg-grad);
-  background-attachment: fixed;
   color: var(--ink);
   min-height: 100vh;
+}
+
+/* A dedicated fixed layer for the page background, rather than
+   background-attachment: fixed on body — iOS Safari largely ignores fixed
+   backgrounds on body/html, so this renders where that wouldn't. */
+#space-bg {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-color: var(--bg);
+  background-image: var(--bg-grad);
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+}
+
+/* On narrow/portrait screens (phones, tablets in portrait) a landscape APOD
+   photo under `cover` gets zoomed into a tiny, often near-blank-looking
+   sliver. `contain` keeps the whole photo visible instead, letterboxed
+   against --bg rather than cropped away. */
+@media (max-width: 700px) {
+  #space-bg {
+    background-size: contain;
+    background-position: top center;
+  }
 }
 
 #app {

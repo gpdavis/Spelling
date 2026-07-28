@@ -16,7 +16,9 @@
       "Bash(git fetch *)",
       "Bash(git commit *)",
       "Bash(node -e ' *)",
-      "Bash(npx http-server *)"
+      "Bash(npx http-server *)",
+      "Bash(rm -f c:/git/Spelling/tests/webkit-check.png c:/git/Spelling/tests/webkit-iphone-check.png c:/git/Spelling/tests/webkit-iphone-contain.png c:/git/Spelling/tests/webkit-ipad-contain.png c:/git/Spelling/tests/webkit-iphone-stargazing.png)",
+      "Bash(pkill -f \"http-server -p 4569\")"
     ]
   }
 }

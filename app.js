@@ -1573,11 +1573,9 @@
   }
 
   function applyApodBackground(imageUrl) {
-    document.body.style.backgroundImage =
+    const spaceBg = $("space-bg");
+    spaceBg.style.backgroundImage =
       `linear-gradient(180deg, rgba(11,18,32,0.15), rgba(11,18,32,0.55)), url("${imageUrl}")`;
-    document.body.style.backgroundSize = "cover";
-    document.body.style.backgroundPosition = "center";
-    document.body.style.backgroundAttachment = "fixed";
   }
 
   async function loadApodBackground() {
