@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(git fetch *)",
+      "WebFetch(domain:docs.google.com)"
+    ]
+  }
+}
