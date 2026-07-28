@@ -120,10 +120,47 @@
     setTimeout(() => container.remove(), 4800);
   }
 
+  function showCorrectTick(originX, originY) {
+    const tick = document.createElement("div");
+    tick.className = "correct-tick";
+    tick.style.left = originX + "px";
+    tick.style.top = originY + "px";
+    tick.innerHTML =
+      '<svg viewBox="0 0 24 24" width="100" height="100" aria-hidden="true">' +
+      '<path d="M4 12.5l5 5L20 6" fill="none" stroke="currentColor" ' +
+      'stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+      "</svg>";
+    document.body.appendChild(tick);
+    setTimeout(() => tick.remove(), 900);
+  }
+
+  function showWrongCross(originX, originY) {
+    const cross = document.createElement("div");
+    cross.className = "wrong-cross";
+    cross.style.left = originX + "px";
+    cross.style.top = originY + "px";
+    cross.innerHTML =
+      '<svg viewBox="0 0 24 24" width="100" height="100" aria-hidden="true">' +
+      '<path d="M5 5l14 14M19 5L5 19" fill="none" stroke="currentColor" ' +
+      'stroke-width="4.5" stroke-linecap="round" stroke-linejoin="round"/>' +
+      "</svg>";
+    document.body.appendChild(cross);
+    setTimeout(() => cross.remove(), 1500);
+  }
+
   function celebrateFromMascot() {
     const rect = quizMascot.getBoundingClientRect();
     if (!rect.width) return;
-    launchConfetti(rect.left + rect.width / 2, rect.top + rect.height / 2);
+    const centerX = rect.left + rect.width / 2;
+    const centerY = rect.top + rect.height / 2;
+    launchConfetti(centerX, centerY);
+    showCorrectTick(rect.right - rect.width * 0.15, rect.bottom - rect.height * 0.15);
+  }
+
+  function flashWrongFromMascot() {
+    const rect = quizMascot.getBoundingClientRect();
+    if (!rect.width) return;
+    showWrongCross(rect.right - rect.width * 0.15, rect.bottom - rect.height * 0.15);
   }
 
   let resultsAnimTimer = null;
@@ -1034,6 +1071,7 @@
       feedback.textContent = `❌ You answered "${guess}". The answer was ${correctAnswerText(cur)}.`;
       feedback.className = "bad";
       setQuizMascot("wrong");
+      flashWrongFromMascot();
       session.i += 1;
       answerForm.classList.add("hidden");
       nextBtn.classList.remove("hidden");
