@@ -1543,12 +1543,14 @@
 
   // ---- daily space background (NASA APOD) ----
   //
-  // DEMO_KEY is rate-limited (~30/hr, 50/day per IP), so we cache the chosen
-  // image per calendar day in localStorage — normal use is one real fetch per
-  // device per day. Video-of-the-day entries have no still image, so on those
-  // days we pull a random image from the last year of the archive instead.
+  // Uses a personal api.nasa.gov key (1000 req/hr) rather than the shared
+  // DEMO_KEY, which is rate-limited per IP address and gets exhausted by
+  // anyone else on the same network/key. We still cache the chosen image per
+  // calendar day in localStorage — normal use is one real fetch per device
+  // per day. Video-of-the-day entries have no still image, so on those days
+  // we pull a random image from the last year of the archive instead.
   const APOD_API = "https://api.nasa.gov/planetary/apod";
-  const APOD_KEY = "DEMO_KEY";
+  const APOD_KEY = "otl7VnoT3MLbrG96UP5bjqMJzfFOvAktrzDjhlhj";
   const APOD_CACHE_KEY = "spelling.apodCache";
   const APOD_RANDOM_ATTEMPTS = 5;
 

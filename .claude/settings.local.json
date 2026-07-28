@@ -18,7 +18,12 @@
       "Bash(node -e ' *)",
       "Bash(npx http-server *)",
       "Bash(rm -f c:/git/Spelling/tests/webkit-check.png c:/git/Spelling/tests/webkit-iphone-check.png c:/git/Spelling/tests/webkit-iphone-contain.png c:/git/Spelling/tests/webkit-ipad-contain.png c:/git/Spelling/tests/webkit-iphone-stargazing.png)",
-      "Bash(pkill -f \"http-server -p 4569\")"
+      "Bash(pkill -f \"http-server -p 4569\")",
+      "Bash(curl -s -o /dev/null -w \"HTTP_STATUS:%{http_code}\\\\n\" -m 10 \"https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY&date=2026-07-28\")",
+      "Bash(curl -s -m 10 \"https://api.nasa.gov/planetary/apod?api_key=DEMO_KEY&date=2026-07-28\")",
+      "Bash(curl -s -o /dev/null -w \"HTTP_STATUS:%{http_code}\\\\n\" -m 10 \"https://api.nasa.gov/planetary/apod?api_key=otl7VnoT3MLbrG96UP5bjqMJzfFOvAktrzDjhlhj&date=2026-07-28\")",
+      "Read(//c/Users/GeoffDavis/AppData/Local/Temp/claude/c--git-Spelling/b6120546-59a7-43b6-8d3d-0bf20cbef5b7/tasks/**)",
+      "Bash(netstat -ano)"
     ]
   }
 }
