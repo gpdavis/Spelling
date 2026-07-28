@@ -382,8 +382,8 @@ button.primary:hover { filter: brightness(1.1); }
 }
 
 #quiz-mascot {
-  width: 140px;
-  height: 140px;
+  width: 280px;
+  height: 280px;
   background-repeat: no-repeat;
   background-size: 600% 300%;
   background-position: 0% 0%;
