@@ -8,7 +8,7 @@
 (function () {
   window.STREAK_PRIZES = {
     small: {
-      days: [10, 14, 23, 35, 48, 61, 79, 91],
+      days: [10, 14, 23, 35, 51, 61, 79, 91],
       message: "🍫 Send a screen shot of this to your parents to get a chocolate surprise!",
       robot: "Images/RobotStreak.svg",
     },
