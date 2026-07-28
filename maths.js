@@ -87,12 +87,12 @@
       const b = randInt(1, a - 1);
       return { question: `${a} − ${b} = ?`, answer: String(a - b), aid: "numberline", context: "Subtraction" };
     },
-    friendsToTen() {
-      const a = randInt(1, 9);
-      return Math.random() < 0.5
-        ? { question: `${a} + ? = 10`, answer: String(10 - a), context: "Friends to 10" }
-        : { question: `What goes with ${a} to make 10?`, answer: String(10 - a), context: "Friends to 10" };
-    },
+    // friendsToTen() {
+    //   const a = randInt(1, 9);
+    //   return Math.random() < 0.5
+    //     ? { question: `${a} + ? = 10`, answer: String(10 - a), context: "Friends to 10" }
+    //     : { question: `What goes with ${a} to make 10?`, answer: String(10 - a), context: "Friends to 10" };
+    // },
 
     // ---- Place value recognition to 9,999 (Y2) ----
     // Uses a 4-digit number with distinct digits (and no leading zero) so
@@ -173,8 +173,8 @@
     // addition are solid — so those weak spots come up more often without
     // dropping the others entirely.
     "Year 2": {
-      "Skip count by 2s, 5s, 10s": { generator: "skipCount", args: { steps: [2, 5, 10] } },
-      "Skip count by 3s, 4s": { generator: "skipCount", args: { steps: [3, 4] }, weight: 3 },
+      //"Skip count by 2s, 5s, 10s": { generator: "skipCount", args: { steps: [2, 5, 10] } },
+      //"Skip count by 3s, 4s": { generator: "skipCount", args: { steps: [3, 4] }, weight: 1 },
       "Backwards skip count": { generator: "skipCount", args: { steps: [2, 3, 4, 5, 10], direction: "back" } },
       "Simple addition (with number line)": { generator: "y2AddNumberLine" },
       "Simple subtraction (with number line)": { generator: "y2SubNumberLine", weight: 2 },
