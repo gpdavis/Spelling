@@ -89,6 +89,38 @@ body.stargazing #app { display: none; }
 
 #stargaze-btn:hover { background: #1c2740; }
 
+#space-caption {
+  display: none;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 60;
+  padding: 1.5rem 1rem 4.5rem;
+  background: linear-gradient(180deg, rgba(11,18,32,0) 0%, rgba(11,18,32,0.85) 35%, rgba(11,18,32,0.95) 100%);
+  max-height: 45vh;
+  overflow-y: auto;
+}
+
+body.stargazing #space-caption:not(.hidden) { display: block; }
+
+.space-caption-inner {
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+#space-caption-title {
+  font-weight: 600;
+  font-size: 1.05rem;
+  margin-bottom: 0.4rem;
+}
+
+#space-caption-text {
+  font-size: 0.9rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
 label {
   display: block;
   margin: 0.75rem 0;
@@ -445,6 +477,15 @@ button.primary:hover { filter: brightness(1.1); }
 
 #results-mascot.animated {
   background-size: 600% 300%;
+}
+
+#results-celebration-video {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  margin: 0.25rem auto 0.75rem;
+  object-fit: contain;
 }
 
 /* ---- streak & chocolate ---- */

@@ -36,6 +36,9 @@
   const historySummary  = $("history-summary");
   const backHistoryBtn  = $("back-from-history-btn");
   const stargazeBtn     = $("stargaze-btn");
+  const spaceCaption      = $("space-caption");
+  const spaceCaptionTitle = $("space-caption-title");
+  const spaceCaptionText  = $("space-caption-text");
 
   const HISTORY_KEY = "spelling.history";
   const NAME_KEY    = "spelling.name";
@@ -66,6 +69,7 @@
 
   const quizMascot    = $("quiz-mascot");
   const resultsMascot = $("results-mascot");
+  const resultsCelebrationVideo = $("results-celebration-video");
   const homeStreakEl       = $("home-streak");
   const homeChocolateEl    = $("home-chocolate");
   const resultsStreakEl    = $("results-streak");
@@ -87,6 +91,10 @@
 
   function mascotAnimSrc(level) {
     return `Images/${mascotFor(level)}Animation.png`;
+  }
+
+  function mascotCelebrationSrc(level) {
+    return `Images/${mascotFor(level)}Celebration.mp4`;
   }
 
   const CONFETTI_COLORS = ["#fbbf24", "#34d399", "#60a5fa", "#f472b6", "#a78bfa", "#fb7185", "#facc15", "#22d3ee"];
@@ -172,6 +180,18 @@
       resultsAnimTimer = null;
     }
     resultsMascot.classList.remove("animated");
+    resultsMascot.classList.remove("hidden");
+    resultsCelebrationVideo.pause();
+    resultsCelebrationVideo.removeAttribute("src");
+    resultsCelebrationVideo.classList.add("hidden");
+  }
+
+  function playResultsCelebrationVideo(level) {
+    stopResultsAnimation();
+    resultsMascot.classList.add("hidden");
+    resultsCelebrationVideo.classList.remove("hidden");
+    resultsCelebrationVideo.src = mascotCelebrationSrc(level);
+    resultsCelebrationVideo.play().catch(() => {});
   }
 
   function playResultsAnimation(level) {
@@ -415,9 +435,16 @@
     stargazeBtn.textContent = "✨ Stargaze";
   }
 
+  // The day's space photo stays off-screen (plain starfield gradient shown
+  // instead) until both spelling and maths are done — it's the payoff for
+  // finishing, not a preview visible from the setup screen.
+  let spaceAvailable = false;
+
   function setStargazeAvailable(available) {
     stargazeBtn.classList.toggle("hidden", !available);
     if (!available) exitStargazing();
+    spaceAvailable = available;
+    refreshSpaceBackground();
   }
 
   stargazeBtn.addEventListener("click", () => {
@@ -1164,7 +1191,9 @@
     }
 
     const justHitPrize = earnsTick && !!prizeForCount(streak);
-    if (pct === 1 || justHitPrize) {
+    if (pct === 1) {
+      playResultsCelebrationVideo(session.level);
+    } else if (justHitPrize) {
       playResultsAnimation(session.level);
     } else {
       stopResultsAnimation();
@@ -1174,7 +1203,8 @@
     }
     if (justHitPrize) {
       setTimeout(() => {
-        const r = resultsMascot.getBoundingClientRect();
+        const celebrationEl = pct === 1 ? resultsCelebrationVideo : resultsMascot;
+        const r = celebrationEl.getBoundingClientRect();
         if (r.width) launchConfetti(r.left + r.width / 2, r.top + r.height / 2);
       }, 250);
     }
@@ -1579,10 +1609,34 @@
     } catch (e) { return null; }
   }
 
-  function applyApodBackground(imageUrl) {
+  // Set once the day's photo (and its title/explanation) is fetched or read
+  // from cache. Kept separate from *showing* it — see setStargazeAvailable —
+  // so the fetch can happen on boot while the reveal waits for completion.
+  let apodInfo = null;
+
+  function apodInfoFrom(data) {
+    return {
+      imageUrl: data.url,
+      title: data.title || "",
+      explanation: data.explanation || "",
+      copyright: data.copyright || "",
+    };
+  }
+
+  function refreshSpaceBackground() {
     const spaceBg = $("space-bg");
-    spaceBg.style.backgroundImage =
-      `linear-gradient(180deg, rgba(11,18,32,0.15), rgba(11,18,32,0.55)), url("${imageUrl}")`;
+    if (spaceAvailable && apodInfo && apodInfo.imageUrl) {
+      spaceBg.style.backgroundImage =
+        `linear-gradient(180deg, rgba(11,18,32,0.15), rgba(11,18,32,0.55)), url("${apodInfo.imageUrl}")`;
+      spaceCaptionTitle.textContent = apodInfo.title;
+      spaceCaptionText.textContent = apodInfo.copyright
+        ? `${apodInfo.explanation} (📷 ${apodInfo.copyright})`
+        : apodInfo.explanation;
+      spaceCaption.classList.toggle("hidden", !apodInfo.title);
+    } else {
+      spaceBg.style.backgroundImage = "";
+      spaceCaption.classList.add("hidden");
+    }
   }
 
   async function loadApodBackground() {
@@ -1590,7 +1644,8 @@
     let cache = null;
     try { cache = JSON.parse(localStorage.getItem(APOD_CACHE_KEY) || "null"); } catch (e) { cache = null; }
     if (cache && cache.date === today) {
-      if (cache.imageUrl) applyApodBackground(cache.imageUrl);
+      apodInfo = cache.imageUrl ? cache : null;
+      refreshSpaceBackground();
       return;
     }
 
@@ -1600,19 +1655,20 @@
     // Deliberately using `url` (standard resolution, usually well under 1MB)
     // rather than `hdurl`, which can be 5-10+ MB — far too heavy for a page
     // background, especially on the tablets this app tends to run on.
-    let imageUrl = todayData.media_type === "image" ? todayData.url : null;
+    let info = todayData.media_type === "image" ? apodInfoFrom(todayData) : null;
 
-    if (!imageUrl) {
-      for (let i = 0; i < APOD_RANDOM_ATTEMPTS && !imageUrl; i++) {
+    if (!info) {
+      for (let i = 0; i < APOD_RANDOM_ATTEMPTS && !info; i++) {
         const pastData = await fetchApod(randomPastDateStr());
         if (pastData && pastData.media_type === "image") {
-          imageUrl = pastData.url;
+          info = apodInfoFrom(pastData);
         }
       }
     }
 
-    localStorage.setItem(APOD_CACHE_KEY, JSON.stringify({ date: today, imageUrl: imageUrl || null }));
-    if (imageUrl) applyApodBackground(imageUrl);
+    localStorage.setItem(APOD_CACHE_KEY, JSON.stringify(info ? { date: today, ...info } : { date: today, imageUrl: null }));
+    apodInfo = info;
+    refreshSpaceBackground();
   }
 
   // ---- auto-update on new deploys ----

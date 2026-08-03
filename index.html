@@ -15,6 +15,12 @@
 </head>
 <body>
 <div id="space-bg" aria-hidden="true"></div>
+<div id="space-caption" class="hidden" aria-hidden="true">
+  <div class="space-caption-inner">
+    <div id="space-caption-title"></div>
+    <div id="space-caption-text"></div>
+  </div>
+</div>
 <main id="app">
    <section id="setup" class="card">
     <div class="home-logo">
@@ -84,6 +90,7 @@
   <section id="results" class="card hidden">
     <h2>All done!</h2>
     <div id="results-mascot" class="mascot" aria-hidden="true"></div>
+    <video id="results-celebration-video" class="mascot hidden" aria-hidden="true" playsinline loop></video>
     <div id="results-streak" class="streak hidden" aria-live="polite"></div>
     <div id="results-chocolate" class="chocolate-prize hidden"></div>
     <div id="score"></div>
