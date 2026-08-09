@@ -89,6 +89,23 @@ body.stargazing #app { display: none; }
 
 #stargaze-btn:hover { background: #1c2740; }
 
+#caption-toggle-btn {
+  position: fixed;
+  left: 1.25rem;
+  bottom: 1.25rem;
+  z-index: 70;
+  padding: 0.6rem 1rem;
+  font-size: 0.95rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--card-2);
+  color: var(--ink);
+  box-shadow: 0 8px 24px rgba(0,0,0,0.45);
+  cursor: pointer;
+}
+
+#caption-toggle-btn:hover { background: #1c2740; }
+
 #space-caption {
   display: none;
   position: fixed;

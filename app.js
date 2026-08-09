@@ -36,6 +36,7 @@
   const historySummary  = $("history-summary");
   const backHistoryBtn  = $("back-from-history-btn");
   const stargazeBtn     = $("stargaze-btn");
+  const captionToggleBtn  = $("caption-toggle-btn");
   const spaceCaption      = $("space-caption");
   const spaceCaptionTitle = $("space-caption-title");
   const spaceCaptionText  = $("space-caption-text");
@@ -461,6 +462,7 @@
   function exitStargazing() {
     document.body.classList.remove("stargazing");
     stargazeBtn.textContent = "✨ Stargaze";
+    updateCaptionToggleBtn();
   }
 
   // The day's space photo stays off-screen (plain starfield gradient shown
@@ -478,6 +480,28 @@
   stargazeBtn.addEventListener("click", () => {
     const active = document.body.classList.toggle("stargazing");
     stargazeBtn.textContent = active ? "↩ Back to Spellatron" : "✨ Stargaze";
+    updateCaptionToggleBtn();
+  });
+
+  // Whether the kid wants the title/explanation panel showing over the photo
+  // — remembered across visits so a kid who hides it once doesn't have to
+  // hide it again every day.
+  const CAPTION_VISIBLE_KEY = "spelling.captionVisible";
+  let captionVisible = localStorage.getItem(CAPTION_VISIBLE_KEY) !== "0";
+
+  // Shows/hides the toggle button itself (only relevant while stargazing
+  // with a caption actually loaded) and keeps its label in sync.
+  function updateCaptionToggleBtn() {
+    const hasCaption = !!(apodInfo && apodInfo.title);
+    const stargazing = document.body.classList.contains("stargazing");
+    captionToggleBtn.classList.toggle("hidden", !(spaceAvailable && stargazing && hasCaption));
+    captionToggleBtn.textContent = captionVisible ? "🙈 Hide info" : "ℹ️ Show info";
+  }
+
+  captionToggleBtn.addEventListener("click", () => {
+    captionVisible = !captionVisible;
+    try { localStorage.setItem(CAPTION_VISIBLE_KEY, captionVisible ? "1" : "0"); } catch (e) {}
+    refreshSpaceBackground();
   });
 
   function renderPointsInto(name, year, pointsEl, chocolateEl) {
@@ -1670,11 +1694,12 @@
       spaceCaptionText.textContent = apodInfo.copyright
         ? `${apodInfo.explanation} (📷 ${apodInfo.copyright})`
         : apodInfo.explanation;
-      spaceCaption.classList.toggle("hidden", !apodInfo.title);
+      spaceCaption.classList.toggle("hidden", !apodInfo.title || !captionVisible);
     } else {
       spaceBg.style.backgroundImage = "";
       spaceCaption.classList.add("hidden");
     }
+    updateCaptionToggleBtn();
   }
 
   async function loadApodBackground() {
