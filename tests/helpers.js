@@ -35,8 +35,8 @@ async function installFixtures(page) {
   await page.route("**/maths.js", (route) =>
     route.fulfill({ status: 200, contentType: "application/javascript", body: TEST_MATHS_JS })
   );
-  // Streaks read the Form's linked Sheet as CSV. Stub it with just a header row
-  // so tests stay offline and deterministic (no real streak history).
+  // Points read the Form's linked Sheet as CSV. Stub it with just a header row
+  // so tests stay offline and deterministic (no real point history).
   await page.route("**/gviz/tq*", (route) =>
     route.fulfill({
       status: 200,

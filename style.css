@@ -497,27 +497,20 @@ button.primary:hover { filter: brightness(1.1); }
   object-fit: contain;
 }
 
-/* ---- streak & chocolate ---- */
+/* ---- points & chocolate ---- */
 
-.streak {
+.points {
   text-align: center;
   margin: 0 0 1rem;
   color: #fbbf24;
 }
 
-.streak-line {
+.points-line {
   font-size: 1.15rem;
   font-weight: 600;
 }
 
-.streak-dots {
-  font-size: 1.05rem;
-  letter-spacing: 0.15em;
-  margin-top: 0.35rem;
-  filter: drop-shadow(0 1px 0 rgba(0, 0, 0, 0.3));
-}
-
-.streak-sub {
+.points-sub {
   font-size: 0.9rem;
   color: var(--muted);
   margin-top: 0.25rem;
@@ -545,7 +538,7 @@ button.primary:hover { filter: brightness(1.1); }
   box-shadow: 0 6px 18px rgba(120, 53, 15, 0.45);
 }
 
-/* Plays once when the kid arrives at the home screen during a prize streak. */
+/* Plays once when the kid arrives at the home screen with a prize active. */
 .chocolate-prize.celebrate {
   animation: prize-pop 700ms cubic-bezier(0.3, 1.6, 0.4, 1);
 }

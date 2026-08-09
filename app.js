@@ -43,36 +43,39 @@
   const HISTORY_KEY = "spelling.history";
   const NAME_KEY    = "spelling.name";
   const LEVEL_KEY   = "spelling.level";
-  const STREAK_CACHE_KEY = "spelling.streakCache"; // last Sheet-derived day map (offline cache)
+  const POINTS_CACHE_KEY = "spelling.pointsCache"; // last Sheet-derived day map (offline cache)
   const LOCAL_TODAY_KEY  = "spelling.localToday";  // optimistic "done today" overlay (this device)
   const WORDS_PER_SESSION = 10;
   const WEEKLY_POOL_SIZE = 25;
   // Both spelling and maths need this final score or better to earn the day's tick.
   const PASS_PCT = 0.8;
+  // Doing both subjects earns a point; doing them again the same day earns a
+  // second, but a day can't earn more than this many.
+  const POINTS_PER_DAY_CAP = 2;
 
   const lists       = window.WORD_LISTS || {};
   const mathsLists  = window.MATHS_LISTS || {};
   const mathsGens   = window.MATHS_GENERATORS || {};
 
-  // Streak prize milestones live in prizes.js (window.STREAK_PRIZES).
-  const PRIZES = window.STREAK_PRIZES || { small: { days: [], message: "" }, big: { days: [], message: "" } };
+  // Prize milestones live in prizes.js (window.POINT_PRIZES).
+  const PRIZES = window.POINT_PRIZES || { small: { points: [], message: "" }, big: { points: [], message: "" } };
 
-  // Which prize, if any, a streak of `count` days wins. Big takes precedence
-  // over small if a day count somehow appears in both lists. Returns the prize
-  // tier object ({ days, message }) or null.
+  // Which prize, if any, a total of `count` points wins. Big takes precedence
+  // over small if a point count somehow appears in both lists. Returns the
+  // prize tier object ({ points, message }) or null.
   function prizeForCount(count) {
     if (!count) return null;
-    if (PRIZES.big && Array.isArray(PRIZES.big.days) && PRIZES.big.days.includes(count)) return PRIZES.big;
-    if (PRIZES.small && Array.isArray(PRIZES.small.days) && PRIZES.small.days.includes(count)) return PRIZES.small;
+    if (PRIZES.big && Array.isArray(PRIZES.big.points) && PRIZES.big.points.includes(count)) return PRIZES.big;
+    if (PRIZES.small && Array.isArray(PRIZES.small.points) && PRIZES.small.points.includes(count)) return PRIZES.small;
     return null;
   }
 
   const quizMascot    = $("quiz-mascot");
   const resultsMascot = $("results-mascot");
   const resultsCelebrationVideo = $("results-celebration-video");
-  const homeStreakEl       = $("home-streak");
+  const homePointsEl       = $("home-points");
   const homeChocolateEl    = $("home-chocolate");
-  const resultsStreakEl    = $("results-streak");
+  const resultsPointsEl    = $("results-points");
   const resultsChocolateEl = $("results-chocolate");
 
   const MASCOT_BY_LEVEL = {
@@ -249,14 +252,17 @@
   // through before either reaching 0 missed or clicking "New practice".
   let attempt = null;
 
-  // ---- streaks (Google Sheet–backed) ----
+  // ---- points (Google Sheet–backed) ----
   //
-  // The Form's linked Sheet is the source of truth, so a kid's run of days
-  // follows them across devices. We read it as CSV (the Sheet is shared
-  // "anyone with the link can view") and compute the streak per name+year.
+  // The Form's linked Sheet is the source of truth, so a kid's points follow
+  // them across devices. We read it as CSV (the Sheet is shared "anyone with
+  // the link can view") and compute the point total per name+year.
   //
-  // A day counts only when BOTH spelling and maths were passed (≥PASS_PCT) that
-  // day; the streak is the run of such days ending today or yesterday.
+  // A point is earned each time BOTH spelling and maths are passed (≥PASS_PCT)
+  // on the same day — missing a day doesn't cost anything, it just doesn't add
+  // a point. Doing both subjects again the same day earns a second point, up
+  // to POINTS_PER_DAY_CAP per day. The total is the sum across every day ever
+  // played, so it only ever goes up.
   //
   // Two wrinkles the code handles:
   //   * A just-finished quiz won't appear in the Sheet for a few seconds, so we
@@ -264,7 +270,7 @@
   //   * The Sheet read can fail (offline), so the last good day-map is cached
   //     in localStorage and used until a fresh read lands.
 
-  const STREAK_SHEET_CSV_URL =
+  const POINTS_SHEET_CSV_URL =
     "https://docs.google.com/spreadsheets/d/1ijGzT_benZ01we7Sb9svit0o_mefw7h_2i3Oye1deMw/gviz/tq?tqx=out:csv";
 
   function todayStr() {
@@ -272,14 +278,8 @@
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   }
 
-  function addDays(dateStr, delta) {
-    const d = new Date(dateStr + "T00:00:00");
-    d.setDate(d.getDate() + delta);
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
-  }
-
   // Identity = name (case-insensitive, trimmed) + year (exact).
-  function streakKey(name, year) {
+  function pointsKey(name, year) {
     return `${String(name || "").trim().toLowerCase()}|${String(year || "").trim()}`;
   }
 
@@ -328,30 +328,56 @@
     return { year: parts[0] || "", subject };
   }
 
-  // Fold the Sheet rows into  key → { "YYYY-MM-DD": { spelling, maths } }, where
-  // a true flag means that subject was passed (≥PASS_PCT) on that day.
+  // Fold the Sheet rows into key → { "YYYY-MM-DD": { spelling, maths } }, where
+  // each count is how many separate *sittings* of that subject passed
+  // (≥PASS_PCT) that day. A sitting is the first attempt plus any retries the
+  // kid played through before "New practice" — each row is tagged with its
+  // round label ("First attempt" / "Retry N"), so a "First attempt" row opens
+  // a new sitting and any "Retry" rows fold into the sitting still open for
+  // that name+year+subject+day. This keeps a kid retrying after already
+  // passing from inflating the count — the sitting only ever adds one pass.
   function buildDayMap(rows) {
-    const map = {};
+    const sittings = {}; // key -> date -> subject -> [passed, passed, ...]
     const passMark = PASS_PCT * 100;
     for (let i = 1; i < rows.length; i++) { // row 0 is the header
       const r = rows[i];
-      if (!r || r.length < 6) continue;
+      if (!r || r.length < 7) continue;
       const { year, subject } = parseLevel(r[2]);
       if (!subject) continue;
-      const pct = parseFloat(r[5]);
-      if (!isFinite(pct) || pct < passMark) continue;
       const date = sheetDateKey(r[0]);
       if (!date) continue;
-      const key = streakKey(r[1], year);
-      const days = map[key] || (map[key] = {});
-      const day = days[date] || (days[date] = { spelling: false, maths: false });
-      day[subject] = true;
+      const pct = parseFloat(r[5]);
+      const passed = isFinite(pct) && pct >= passMark;
+      const key = pointsKey(r[1], year);
+      const isRetry = /^\s*Retry\b/.test(String(r[6] || ""));
+
+      const byDate = sittings[key] || (sittings[key] = {});
+      const bySubject = byDate[date] || (byDate[date] = { spelling: [], maths: [] });
+      const list = bySubject[subject];
+
+      if (isRetry && list.length) {
+        list[list.length - 1] = list[list.length - 1] || passed;
+      } else {
+        list.push(passed);
+      }
+    }
+
+    const map = {};
+    for (const key in sittings) {
+      const days = map[key] = {};
+      for (const date in sittings[key]) {
+        const bySubject = sittings[key][date];
+        days[date] = {
+          spelling: bySubject.spelling.filter(Boolean).length,
+          maths: bySubject.maths.filter(Boolean).length,
+        };
+      }
     }
     return map;
   }
 
   function loadDayMapCache() {
-    try { return JSON.parse(localStorage.getItem(STREAK_CACHE_KEY) || "{}"); }
+    try { return JSON.parse(localStorage.getItem(POINTS_CACHE_KEY) || "{}"); }
     catch (e) { return {}; }
   }
 
@@ -359,14 +385,14 @@
   // then replaced when the Sheet read lands.
   let sheetDayMap = loadDayMapCache();
 
-  async function refreshStreaksFromSheet() {
-    if (!STREAK_SHEET_CSV_URL) return;
+  async function refreshPointsFromSheet() {
+    if (!POINTS_SHEET_CSV_URL) return;
     try {
-      const res = await fetch(STREAK_SHEET_CSV_URL, { cache: "no-store" });
+      const res = await fetch(POINTS_SHEET_CSV_URL, { cache: "no-store" });
       if (!res.ok) return;
       sheetDayMap = buildDayMap(parseCSV(await res.text()));
-      try { localStorage.setItem(STREAK_CACHE_KEY, JSON.stringify(sheetDayMap)); } catch (e) {}
-      if (!setup.classList.contains("hidden")) refreshHomeStreak();
+      try { localStorage.setItem(POINTS_CACHE_KEY, JSON.stringify(sheetDayMap)); } catch (e) {}
+      if (!setup.classList.contains("hidden")) refreshHomePoints();
     } catch (e) { /* offline — keep the cached map */ }
   }
 
@@ -377,55 +403,57 @@
     catch (e) { return {}; }
   }
 
+  // Called once per completed sitting (see the `attempt.recorded` guard in
+  // showResults) that passed ≥PASS_PCT, so retrying after already passing
+  // never counts twice.
   function recordLocalPass(name, year, subject) {
     const all = loadLocalToday();
-    const key = streakKey(name, year);
+    const key = pointsKey(name, year);
     const today = todayStr();
     let e = all[key];
-    if (!e || e.date !== today) e = { date: today, spelling: false, maths: false };
-    e[subject] = true;
+    if (!e || e.date !== today) e = { date: today, spelling: 0, maths: 0 };
+    e[subject] = (e[subject] || 0) + 1;
     all[key] = e;
     try { localStorage.setItem(LOCAL_TODAY_KEY, JSON.stringify(all)); } catch (err) {}
   }
 
   function localTodayFor(key) {
     const e = loadLocalToday()[key];
-    if (e && e.date === todayStr()) return { spelling: !!e.spelling, maths: !!e.maths };
-    return { spelling: false, maths: false };
+    if (e && e.date === todayStr()) return { spelling: e.spelling || 0, maths: e.maths || 0 };
+    return { spelling: 0, maths: 0 };
   }
 
-  // ---- computing the streak ----
+  // ---- computing the points total ----
 
-  // Returns { count, todayDone: { spelling, maths } } for name+year, combining
-  // the Sheet history with today's optimistic local passes.
-  function getStreakStatus(name, year) {
-    if (!name) return { count: 0, todayDone: {} };
-    const key = streakKey(name, year);
+  // Returns { count, todayCount, todayDone: { spelling, maths } } for
+  // name+year: `count` is the lifetime point total, `todayCount` is how many
+  // of those were earned today, combining the Sheet history with today's
+  // optimistic local passes (taking whichever says more, since the local
+  // overlay is redundant once the Sheet catches up).
+  function getPointsStatus(name, year) {
+    if (!name) return { count: 0, todayCount: 0, todayDone: {} };
+    const key = pointsKey(name, year);
     const src = sheetDayMap[key] || {};
     const days = {};
-    for (const d in src) days[d] = { spelling: !!src[d].spelling, maths: !!src[d].maths };
+    for (const d in src) days[d] = { spelling: src[d].spelling || 0, maths: src[d].maths || 0 };
 
     const today = todayStr();
     const loc = localTodayFor(key);
-    if (loc.spelling || loc.maths) {
-      const d = days[today] || (days[today] = { spelling: false, maths: false });
-      d.spelling = d.spelling || loc.spelling;
-      d.maths = d.maths || loc.maths;
+    if (loc.spelling || loc.maths || days[today]) {
+      const d = days[today] || (days[today] = { spelling: 0, maths: 0 });
+      d.spelling = Math.max(d.spelling, loc.spelling);
+      d.maths = Math.max(d.maths, loc.maths);
     }
 
-    const qualifies = (date) => !!(days[date] && days[date].spelling && days[date].maths);
-
-    let anchor = null;
-    if (qualifies(today)) anchor = today;
-    else if (qualifies(addDays(today, -1))) anchor = addDays(today, -1);
-
     let count = 0;
-    for (let cur = anchor; cur && qualifies(cur); cur = addDays(cur, -1)) count++;
+    for (const d in days) {
+      count += Math.min(days[d].spelling, days[d].maths, POINTS_PER_DAY_CAP);
+    }
 
-    const todayDone = days[today]
-      ? { spelling: !!days[today].spelling, maths: !!days[today].maths }
-      : {};
-    return { count, todayDone };
+    const todayInfo = days[today] || { spelling: 0, maths: 0 };
+    const todayDone = { spelling: todayInfo.spelling > 0, maths: todayInfo.maths > 0 };
+    const todayCount = Math.min(todayInfo.spelling, todayInfo.maths, POINTS_PER_DAY_CAP);
+    return { count, todayCount, todayDone };
   }
 
   // ---- "stargaze" mode: hide the app to admire today's space background ----
@@ -452,45 +480,48 @@
     stargazeBtn.textContent = active ? "↩ Back to Spellatron" : "✨ Stargaze";
   });
 
-  function renderStreakInto(name, year, streakEl, chocolateEl) {
-    streakEl.textContent = "";
+  function renderPointsInto(name, year, pointsEl, chocolateEl) {
+    pointsEl.textContent = "";
     const line = document.createElement("div");
-    line.className = "streak-line";
+    line.className = "points-line";
 
     if (!name) {
-      line.textContent = "You need to complete spelling and maths for a streak";
-      streakEl.appendChild(line);
-      streakEl.classList.remove("hidden");
+      line.textContent = "Complete spelling and maths to earn a point";
+      pointsEl.appendChild(line);
+      pointsEl.classList.remove("hidden");
       chocolateEl.classList.add("hidden");
       setStargazeAvailable(false);
       return;
     }
 
-    const { count, todayDone } = getStreakStatus(name, year);
+    const { count, todayCount, todayDone } = getPointsStatus(name, year);
     const spellingDone = !!todayDone.spelling;
     const mathsDone    = !!todayDone.maths;
-    const bothDone     = spellingDone && mathsDone;
+    const bothDoneOnce  = spellingDone && mathsDone;
 
     if (count > 0) {
-      const dayWord = count === 1 ? "day" : "days";
-      line.textContent = `🔥 ${count} ${dayWord} in a row!`;
+      line.textContent = `⭐ ${count} point${count === 1 ? "" : "s"}!`;
     } else if (spellingDone || mathsDone) {
-      line.textContent = "Almost there! Do both today to start a streak.";
+      line.textContent = "Almost there! Do both today to earn a point.";
     } else {
-      line.textContent = "You need to complete spelling and maths for a streak";
+      line.textContent = "Complete spelling and maths to earn a point";
     }
-    streakEl.appendChild(line);
+    pointsEl.appendChild(line);
 
-    if (!bothDone) {
-      const sub = document.createElement("div");
-      sub.className = "streak-sub";
+    const sub = document.createElement("div");
+    sub.className = "points-sub";
+    if (!bothDoneOnce) {
       const s = spellingDone ? "✅" : "⬜";
       const m = mathsDone    ? "✅" : "⬜";
       sub.textContent = `Today: ${s} Spelling · ${m} Maths`;
-      streakEl.appendChild(sub);
+    } else if (todayCount < POINTS_PER_DAY_CAP) {
+      sub.textContent = `🎉 +${todayCount} today — do both again for another point!`;
+    } else {
+      sub.textContent = `🎉 +${todayCount} today — that's the max for today!`;
     }
+    pointsEl.appendChild(sub);
 
-    streakEl.classList.remove("hidden");
+    pointsEl.classList.remove("hidden");
 
     const prize = prizeForCount(count);
     chocolateEl.textContent = "";
@@ -512,30 +543,30 @@
       chocolateEl.classList.add("hidden");
     }
 
-    setStargazeAvailable(bothDone);
+    setStargazeAvailable(bothDoneOnce);
   }
 
-  function refreshHomeStreak() {
-    renderStreakInto(nameInput.value.trim(), levelSelect.value, homeStreakEl, homeChocolateEl);
+  function refreshHomePoints() {
+    renderPointsInto(nameInput.value.trim(), levelSelect.value, homePointsEl, homeChocolateEl);
     maybeCelebrateHomePrize();
   }
 
   // Set true whenever the kid arrives at the home screen (boot / "New
-  // practice" / back from history) so the *next* streak render celebrates if
+  // practice" / back from history) so the *next* points render celebrates if
   // a prize is active — replaying the animation each time they reopen the
   // site on the prize day, not just the moment they first hit it. Left true
   // across the initial cached render if the Sheet fetch hasn't landed yet, so
-  // the celebration still fires once the real streak count is known instead
-  // of silently missing it.
+  // the celebration still fires once the real point total is known instead of
+  // silently missing it.
   let pendingPrizeCelebration = false;
 
   // Plays the prize animation (bounce + confetti) on the home screen's prize
   // box. Only fires when `pendingPrizeCelebration` is armed, so typing a name
-  // or switching level/tab-refocus (which also call refreshHomeStreak) don't
+  // or switching level/tab-refocus (which also call refreshHomePoints) don't
   // replay it mid-session.
   function maybeCelebrateHomePrize() {
     if (!pendingPrizeCelebration) return;
-    const prize = prizeForCount(getStreakStatus(nameInput.value.trim(), levelSelect.value).count);
+    const prize = prizeForCount(getPointsStatus(nameInput.value.trim(), levelSelect.value).count);
     if (!prize) return;
     pendingPrizeCelebration = false;
     homeChocolateEl.classList.remove("celebrate");
@@ -577,7 +608,7 @@
       expandSetup();
     }
     pendingPrizeCelebration = true;
-    refreshHomeStreak();
+    refreshHomePoints();
     maybeReloadForUpdate();
   }
 
@@ -602,11 +633,11 @@
   nameInput.value = localStorage.getItem(NAME_KEY) || "";
   nameInput.addEventListener("input", () => {
     localStorage.setItem(NAME_KEY, nameInput.value.trim());
-    refreshHomeStreak();
+    refreshHomePoints();
   });
 
-  // The home streak is per name+year, so refresh it when the year changes too.
-  levelSelect.addEventListener("change", refreshHomeStreak);
+  // The home points total is per name+year, so refresh it when the year changes too.
+  levelSelect.addEventListener("change", refreshHomePoints);
 
   changeBtn.addEventListener("click", expandSetup);
 
@@ -645,6 +676,7 @@
       retries: 0,
       endCorrect: 0,
       lastMissed: [],
+      recorded: false, // has this attempt (across all its retries) already earned its point?
     };
     startSession(words, level, subject, subList);
   }
@@ -1172,25 +1204,31 @@
     postRoundToForm(entry, roundLabel);
 
     // Both subjects need ≥80% (counting any retry rounds) to earn the day's
-    // tick. If it doesn't qualify we leave the streak untouched.
+    // tick. If it doesn't qualify we leave the point total untouched. The
+    // `attempt.recorded` guard means a full attempt — first try plus any
+    // retries — only ever earns its point once, no matter how many times its
+    // cumulative score crosses the pass mark across showResults calls.
     const finalPct = attempt && attempt.originalTotal
       ? attempt.endCorrect / attempt.originalTotal
       : pct;
     const earnsTick = finalPct >= PASS_PCT;
-    if (earnsTick) recordLocalPass(session.name, session.level, session.subject);
-    const streak = getStreakStatus(session.name, session.level).count;
-    renderStreakInto(session.name, session.level, resultsStreakEl, resultsChocolateEl);
+    if (earnsTick && attempt && !attempt.recorded) {
+      attempt.recorded = true;
+      recordLocalPass(session.name, session.level, session.subject);
+    }
+    const points = getPointsStatus(session.name, session.level).count;
+    renderPointsInto(session.name, session.level, resultsPointsEl, resultsChocolateEl);
 
     if (!earnsTick) {
       const subjectLabel = session.subject === "maths" ? "maths" : "spelling";
       const note = document.createElement("div");
       note.className = "spelling-tick-note";
       note.textContent = `Score ${Math.round(PASS_PCT * 100)}% or more to tick ${subjectLabel} off for today — try Retry missed!`;
-      resultsStreakEl.appendChild(note);
-      resultsStreakEl.classList.remove("hidden");
+      resultsPointsEl.appendChild(note);
+      resultsPointsEl.classList.remove("hidden");
     }
 
-    const justHitPrize = earnsTick && !!prizeForCount(streak);
+    const justHitPrize = earnsTick && !!prizeForCount(points);
     if (pct === 1) {
       playResultsCelebrationVideo(session.level);
     } else if (justHitPrize) {
@@ -1718,14 +1756,14 @@
   document.addEventListener("visibilitychange", () => {
     if (!document.hidden) {
       checkForUpdate();
-      refreshStreaksFromSheet();
+      refreshPointsFromSheet();
     }
   });
 
   // boot
   populateLevels();
   applySetupMode();
-  refreshStreaksFromSheet();
+  refreshPointsFromSheet();
   checkForUpdate();
   loadApodBackground();
   setInterval(checkForUpdate, UPDATE_CHECK_INTERVAL_MS);

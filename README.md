@@ -58,34 +58,34 @@ Two mascots react during the quiz and on the results screen:
 
 The mascot swaps between standard / correct / incorrect poses as the kid answers. A perfect score (100%) triggers a looping victory sprite animation on the results screen.
 
-## Streaks
+## Points
 
-The app tracks how many days in a row each kid has practised, identified by **name + year** (so Dad practising Year 2 with a child is a different streak from Dad's own Year 4, and two kids of the same name in different years don't collide). The rule:
+The app tracks a lifetime point total per kid, identified by **name + year** (so Dad practising Year 2 with a child is a different total from Dad's own Year 4, and two kids of the same name in different years don't collide). The rule:
 
-> **A day only counts toward the streak when the kid has passed *both* spelling *and* maths — each at 80% or better — on that same day.**
+> **A point is earned each time the kid passes *both* spelling *and* maths — each at 80% or better — on the same day.**
 
-While today is in progress, the home and results screens show a progress line like `Today: ✅ Spelling · ⬜ Maths` (a subject ticks only once it's passed at ≥80%). Once both are ticked, the streak counter rolls forward. Missing a day (or only passing one subject for a day) breaks the streak — it resets to 0 and starts fresh the next time both subjects are passed. A run stays "live" as long as the most recent qualifying day was today or yesterday.
+While today is in progress, the home and results screens show a progress line like `Today: ✅ Spelling · ⬜ Maths` (a subject ticks only once it's passed at ≥80%). Once both are ticked, a point is added to the total. Doing both subjects again the same day earns a second point — up to 2 points per day — so there's a reason to come back for a second round. Missing a day never costs anything; it just doesn't add a point. The total only ever goes up.
 
 ### Prizes
 
-When a streak reaches a configured milestone, the home and results screens show a prize message; hitting one on the results screen also fires the looping victory sprite + a confetti burst. There are two tiers — a **small** prize and a **big** prize — and the milestone day counts and messages all live in [prizes.js](prizes.js):
+When the point total reaches a configured milestone, the home and results screens show a prize message; hitting one on the results screen also fires the looping victory sprite + a confetti burst. There are two tiers — a **small** prize and a **big** prize — and the milestone point counts and messages all live in [prizes.js](prizes.js):
 
 ```js
-window.STREAK_PRIZES = {
-  small: { days: [10, 14, 23, 35, 48, 61, 79, 91], message: "🍫 …chocolate surprise!", robot: "Images/RobotStreak.svg" },
-  big:   { days: [29, 57, 88],                      message: "🏆 …a BIG prize!",         robot: "Images/RobotSuperStreak.svg" },
+window.POINT_PRIZES = {
+  small: { points: [10, 14, 23, 35, 48, 61, 79, 91], message: "🍫 …chocolate surprise!", robot: "Images/RobotStreak.svg" },
+  big:   { points: [29, 57, 88],                      message: "🏆 …a BIG prize!",         robot: "Images/RobotSuperStreak.svg" },
 };
 ```
 
-The message (and its animated `robot`) shows when the streak length **equals** one of the listed days (so each milestone is a one-off celebration, not a permanent banner). A day count in `big` wins the big prize (a brighter gold card); otherwise, if it's in `small`, the small prize. Edit the lists to change when prizes appear.
+The message (and its animated `robot`) shows when the point total **equals** one of the listed counts (so each milestone is a one-off celebration, not a permanent banner). A count in `big` wins the big prize (a brighter gold card); otherwise, if it's in `small`, the small prize. Edit the lists to change when prizes appear.
 
 The prize robots, and the animated home-screen logo ([Images/RobotHome.svg](Images/RobotHome.svg)), are self-contained SVGs with their CSS animations embedded — referenced via `<img>` so they animate without violating the page's `style-src 'self'` CSP.
 
-### Streaks come from the Google Sheet
+### Points come from the Google Sheet
 
-Streaks are computed from the **same Google Sheet the results are posted to** (see below), so a kid's run of days follows them across every device — not just the browser they happened to use. The app reads the Sheet as CSV via its gviz endpoint (`STREAK_SHEET_CSV_URL` in `app.js`); this requires the linked Sheet to be shared **"anyone with the link can view"**. Each row's `Level` column (`Year 4 · Maths · …`) supplies the year and subject, and `Percent` supplies the score, so the both-subjects-at-80% rule is derived entirely from the Sheet.
+Points are computed from the **same Google Sheet the results are posted to** (see below), so a kid's total follows them across every device — not just the browser they happened to use. The app reads the Sheet as CSV via its gviz endpoint (`POINTS_SHEET_CSV_URL` in `app.js`); this requires the linked Sheet to be shared **"anyone with the link can view"**. Each row's `Level` column (`Year 4 · Maths · …`) supplies the year and subject, and `Percent` supplies the score, so the both-subjects-at-80% rule is derived entirely from the Sheet. Rows are also tagged "First attempt" or "Retry N" (see below); the app folds a first attempt and its retries back into one sitting so retrying after already passing can't inflate the count.
 
-Because a just-finished quiz takes a few seconds to appear in the Sheet, the app keeps a small optimistic overlay of *today's* passes in `localStorage` (`spelling.localToday`) so the streak updates instantly on the results screen; the last good Sheet read is cached in `spelling.streakCache` so the home screen isn't blank before the fetch lands (and degrades gracefully offline). The Sheet is re-read on load and whenever the tab regains focus.
+Because a just-finished quiz takes a few seconds to appear in the Sheet, the app keeps a small optimistic overlay of *today's* passes in `localStorage` (`spelling.localToday`) so the total updates instantly on the results screen; the last good Sheet read is cached in `spelling.pointsCache` so the home screen isn't blank before the fetch lands (and degrades gracefully offline). The Sheet is re-read on load and whenever the tab regains focus.
 
 ## Results go to a Google Sheet
 
@@ -155,7 +155,7 @@ This works out of the box on GitHub Pages — no version file to maintain. To di
 ## Notes
 
 - Name, level, and local session history are persisted per-device via `localStorage`.
-- Streaks are sourced from the shared Google Sheet (keyed by name + year), so they sync across devices; only a small `localStorage` cache/overlay is per-device. See [Streaks](#streaks).
+- Points are sourced from the shared Google Sheet (keyed by name + year), so they sync across devices; only a small `localStorage` cache/overlay is per-device. See [Points](#points).
 - There are no accounts — identity is just the name + year a kid picks.
 - The speech voice is whatever the browser provides — quality varies by OS.
 
