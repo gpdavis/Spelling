@@ -139,6 +139,55 @@
       };
     },
 
+    // ---- Telling the time (Y4: any minute, AC9M4M02) ----
+    // Same analogue clock as clockToQuarter, but the minute hand can land
+    // anywhere — reading times like "8:37" is harder than the quarter-hour
+    // positions a Y2 kid gets.
+    clockAnyMinute() {
+      const h = randInt(1, 12);
+      const m = randInt(0, 59);
+      return {
+        question: "What time is it?",
+        answer: `${h}:${String(m).padStart(2, "0")}`,
+        shape: { type: "clock", h, m },
+        context: "Telling the time",
+      };
+    },
+
+    // ---- 24-hour time conversion (Y4, AC9M4M02) ----
+    // Text-only in both directions (no clock face — the whole point is the
+    // am/pm ⇄ 24-hour notation, which an analogue face can't show anyway).
+    // See convert24Hour's checkAnswer/correctAnswerText branch in app.js:
+    // answers are compared as minutes-since-midnight, not exact text, so
+    // "3:45", "03:45" and "345" (and "3:45pm" / "3:45 PM") all count.
+    convert24Hour() {
+      const h12 = randInt(1, 12);
+      const m = randInt(0, 59);
+      const period = pick(["am", "pm"]);
+      const mm = String(m).padStart(2, "0");
+      let h24 = h12 % 12;
+      if (period === "pm") h24 += 12;
+
+      if (Math.random() < 0.5) {
+        // 12-hour -> 24-hour
+        return {
+          question: `Convert ${h12}:${mm} ${period} to 24-hour time.`,
+          answer: `${String(h24).padStart(2, "0")}:${mm}`,
+          answerMinutes: h24 * 60 + m,
+          timeCheck: "24h",
+          context: "24-hour time",
+        };
+      }
+      // 24-hour -> 12-hour
+      return {
+        question: `Convert ${String(h24).padStart(2, "0")}:${mm} (24-hour time) to a 12-hour time. Include am or pm.`,
+        answer: `${h12}:${mm} ${period}`,
+        answerMinutes: h24 * 60 + m,
+        timeCheck: "12h",
+        context: "24-hour time",
+      };
+    },
+
     // ---- Multiplication and division ----
     timesTables({ tables, maxMultiplier = 10 }) {
       const a = pick(tables);
@@ -156,6 +205,95 @@
       const quotient = randInt(2, maxMultiplier);
       const dividend = divisor * quotient;
       return { question: `${dividend} ÷ ${divisor}`, answer: String(quotient), context: "Division facts" };
+    },
+
+    // ---- Year 4: the same × / ÷ facts, dressed up as a mini story ----
+    // Every branch is built so the numbers always divide evenly / multiply to
+    // a whole answer — no remainders sneaking in except the one template
+    // that's explicitly about leftovers.
+    y4WordProblem() {
+      // Regular nouns only (plural = singular + "s") so templates can just
+      // append "s" wherever they need the plural, no irregular forms to trip on.
+      const items = ["lamington", "cupcake", "party pie", "jelly bean", "marble", "footy card",
+        "Anzac biscuit", "dumpling", "pizza slice", "sticker", "texta", "ice block"];
+      const cap = (s) => s.charAt(0).toUpperCase() + s.slice(1);
+      const article = (s) => (/^[aeiou]/i.test(s) ? "An" : "A");
+
+      const templates = [
+        // Equal groups (multiplication)
+        () => {
+          const containers = [
+            { singular: "box", plural: "boxes" },
+            { singular: "bag", plural: "bags" },
+            { singular: "tray", plural: "trays" },
+            { singular: "packet", plural: "packets" },
+          ];
+          const c = pick(containers);
+          const item = pick(items);
+          const perContainer = pick([6, 7, 8, 9, 6, 7, 8, 9, 2, 3, 4, 5, 10, 11, 12]);
+          const numContainers = randInt(2, 10);
+          return {
+            question: `There are ${numContainers} ${c.plural} of ${item}s with ${perContainer} in each ${c.singular}. How many ${item}s are there altogether?`,
+            answer: String(perContainer * numContainers),
+          };
+        },
+        // Fraction of a group — a division fact wearing a party hat, same
+        // shape as "A lamington tray has 12 lamingtons, you eat 1/4 — how many?"
+        () => {
+          const denom = pick([2, 3, 4, 5, 10]);
+          const numer = Math.random() < 0.6 ? 1 : randInt(1, denom - 1);
+          const n = denom * randInt(1, 6);
+          const item = pick(items);
+          const portion = (n / denom) * numer;
+          const fracWord = numer === 1 ? `1/${denom}` : `${numer}/${denom}`;
+          return Math.random() < 0.5
+            ? { question: `${article(item)} ${item} tray has ${n} ${item}s. If you eat ${fracWord} of them, how many did you eat?`, answer: String(portion) }
+            : { question: `${article(item)} ${item} tray has ${n} ${item}s. You eat ${fracWord} of them. How many are left?`, answer: String(n - portion) };
+        },
+        // Equal sharing (division)
+        () => {
+          const friends = randInt(2, 10);
+          const each = randInt(2, 10);
+          const item = pick(items);
+          return {
+            question: `${friends} friends share ${friends * each} ${item}s equally. How many ${item}s does each friend get?`,
+            answer: String(each),
+          };
+        },
+        // Arrays (multiplication, a different picture in your head)
+        () => {
+          const rows = randInt(2, 10);
+          const perRow = pick([6, 7, 8, 9, 2, 3, 4, 5, 10]);
+          const place = pick(["The school hall has", "The bus has", "The cinema has", "The classroom has"]);
+          return {
+            question: `${place} ${rows} rows of chairs with ${perRow} chairs in each row. How many chairs are there in total?`,
+            answer: String(rows * perRow),
+          };
+        },
+        // Money (whole dollars only — no decimals or $ signs to type back)
+        () => {
+          const price = randInt(2, 9);
+          const qty = randInt(2, 10);
+          const item = pick(items);
+          return {
+            question: `${cap(item)}s cost $${price} each. How many dollars would ${qty} of them cost altogether?`,
+            answer: String(price * qty),
+          };
+        },
+        // Two-step: share evenly, then say what's left over
+        () => {
+          const friends = randInt(2, 9);
+          const each = randInt(2, 9);
+          const extra = randInt(0, each - 1);
+          const item = pick(items);
+          return {
+            question: `You have ${friends * each + extra} ${item}s. You share them evenly between ${friends} friends, giving each as many as possible. How many ${item}s are left over?`,
+            answer: String(extra),
+          };
+        },
+      ];
+
+      return { ...pick(templates)(), context: "Word problem" };
     },
   };
 
@@ -218,7 +356,11 @@
       "× facts (6s, 7s, 8s, 9s)":   { generator: "timesTables", args: { tables: [6, 7, 8, 9] }, weight: 3 },
       "Mixed × tables (to 10×10)":  { generator: "timesTables", args: { tables: [2, 3, 4, 5, 6, 7, 8, 9, 10] } },
       "Division facts":             { generator: "divisionFacts", args: { tables: [2, 3, 4, 5, 6, 7, 8, 9, 10] }, weight: 2 },
-      "× 11s and 12s (stretch)":    { generator: "timesTables", args: { tables: [11, 12], maxMultiplier: 12 }, weight: 2 }
+      "× 11s and 12s (stretch)":    { generator: "timesTables", args: { tables: [11, 12], maxMultiplier: 12 }, weight: 2 },
+      // Same × / ÷ facts, wrapped as mini stories — see y4WordProblem.
+      "Word problems":              { generator: "y4WordProblem", weight: 3 },
+      "Telling the time (any minute)": { generator: "clockAnyMinute" },
+      "24-hour time":                { generator: "convert24Hour" }
     },
 
     "Year 5": {

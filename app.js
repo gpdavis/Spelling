@@ -1037,10 +1037,16 @@
       }
       questionTextEl.textContent = cur.question;
       questionTextEl.classList.remove("hidden");
-      // Clock answers need a colon / words, so switch off the numeric keypad.
+      // Clock/time answers need a colon / letters, so switch off the numeric keypad.
       if (cur.shape && cur.shape.type === "clock") {
         answerInput.setAttribute("inputmode", "text");
         answerInput.setAttribute("placeholder", "e.g. 3:30 or half past 3");
+      } else if (cur.timeCheck === "24h") {
+        answerInput.setAttribute("inputmode", "text");
+        answerInput.setAttribute("placeholder", "e.g. 15:45");
+      } else if (cur.timeCheck === "12h") {
+        answerInput.setAttribute("inputmode", "text");
+        answerInput.setAttribute("placeholder", "e.g. 3:45 pm");
       } else {
         answerInput.setAttribute("inputmode", "numeric");
         answerInput.setAttribute("placeholder", "Type the answer here");
@@ -1126,6 +1132,40 @@
     return null;
   }
 
+  // Parses a 24-hour time guess ("15:45", "1545", "3:45" — leading zero on
+  // the hour is optional) to minutes-since-midnight (0–1439), or null.
+  function parse24HourGuess(raw) {
+    const s = String(raw).trim().toLowerCase().replace(/\s+/g, "");
+    let h, m;
+    let mt = s.match(/^(\d{1,2})[:.](\d{2})$/);
+    if (mt) {
+      h = parseInt(mt[1], 10); m = parseInt(mt[2], 10);
+    } else if ((mt = s.match(/^(\d{3,4})$/))) {
+      const digits = mt[1];
+      const splitAt = digits.length - 2;
+      h = parseInt(digits.slice(0, splitAt), 10);
+      m = parseInt(digits.slice(splitAt), 10);
+    } else {
+      return null;
+    }
+    if (isNaN(h) || isNaN(m) || h < 0 || h > 23 || m < 0 || m > 59) return null;
+    return h * 60 + m;
+  }
+
+  // Parses a 12-hour time guess with am/pm ("3:45 pm", "3:45pm", "03:45 PM")
+  // to minutes-since-midnight (0–1439), or null.
+  function parse12HourGuess(raw) {
+    const s = String(raw).trim().toLowerCase().replace(/\s+/g, "").replace(/\./g, "");
+    const mt = s.match(/^(\d{1,2}):?(\d{2})?(am|pm)$/);
+    if (!mt) return null;
+    const h = parseInt(mt[1], 10);
+    const m = mt[2] !== undefined ? parseInt(mt[2], 10) : 0;
+    if (h < 1 || h > 12 || m > 59) return null;
+    let h24 = h % 12;
+    if (mt[3] === "pm") h24 += 12;
+    return h24 * 60 + m;
+  }
+
   // "half past 3", "quarter to 4", "3 o'clock" — for showing the answer.
   function clockPhrase(h, m) {
     const hr = ((h - 1 + 12) % 12) + 1;
@@ -1143,6 +1183,13 @@
       if (cur.shape && cur.shape.type === "clock") {
         const g = parseTimeGuess(guess);
         return g !== null && g === timeToMinutes(cur.shape.h, cur.shape.m);
+      }
+      // 24-hour conversions compare as minutes-since-midnight — am/pm
+      // matters here (unlike the clock face above), so no mod-12 folding —
+      // and the hour's leading zero / colon are optional either way.
+      if (cur.timeCheck === "24h" || cur.timeCheck === "12h") {
+        const g = cur.timeCheck === "24h" ? parse24HourGuess(guess) : parse12HourGuess(guess);
+        return g !== null && g === cur.answerMinutes;
       }
       const g = normaliseMathsAnswer(guess);
       const t = normaliseMathsAnswer(cur.answer);
