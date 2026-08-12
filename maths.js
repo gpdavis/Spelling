@@ -77,14 +77,20 @@
     },
 
     // ---- Year 2: simple +/- with a number line and friends-to-10 ----
+    // +1/-1 (just count on/back one) and +10/-10 (just bump the tens digit)
+    // are trivial, so the second number always skips those two values.
     y2AddNumberLine() {
       const a = randInt(1, 12);
-      const b = randInt(1, 20 - a);
+      const maxB = 20 - a;
+      let b;
+      do { b = randInt(2, maxB); } while (b === 10);
       return { question: `${a} + ${b} = ?`, answer: String(a + b), aid: "numberline", context: "Addition" };
     },
     y2SubNumberLine() {
       const a = randInt(5, 20);
-      const b = randInt(1, a - 1);
+      const maxB = a - 1;
+      let b;
+      do { b = randInt(2, maxB); } while (b === 10);
       return { question: `${a} − ${b} = ?`, answer: String(a - b), aid: "numberline", context: "Subtraction" };
     },
     // friendsToTen() {
