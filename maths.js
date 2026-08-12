@@ -189,9 +189,14 @@
     },
 
     // ---- Multiplication and division ----
-    timesTables({ tables, maxMultiplier = 10 }) {
+    // `avoid` keeps specific factors out of the *other* side of the
+    // question too — e.g. tables: [6,7,8,9] alone would still let a "×2"
+    // fact sneak in via `b`, since that side is just any number up to
+    // maxMultiplier. Pass avoid: [2, 11] wherever those need to stay retired.
+    timesTables({ tables, maxMultiplier = 10, avoid = [] }) {
       const a = pick(tables);
-      const b = randInt(2, maxMultiplier);
+      let b;
+      do { b = randInt(2, maxMultiplier); } while (avoid.includes(b));
       // randomise which side the "interesting" factor lands on so kids
       // don't see a fixed table column every time
       const value = a * b;
@@ -230,7 +235,7 @@
           ];
           const c = pick(containers);
           const item = pick(items);
-          const perContainer = pick([6, 7, 8, 9, 6, 7, 8, 9, 2, 3, 4, 5, 12]);
+          const perContainer = pick([6, 7, 8, 9, 6, 7, 8, 9, 3, 4, 5, 12]);
           const numContainers = randInt(2, 9);
           return {
             question: `There are ${numContainers} ${c.plural} of ${item}s with ${perContainer} in each ${c.singular}. How many ${item}s are there altogether?`,
@@ -263,7 +268,7 @@
         // Arrays (multiplication, a different picture in your head)
         () => {
           const rows = randInt(2, 10);
-          const perRow = pick([6, 7, 8, 9, 2, 3, 4, 5, 10]);
+          const perRow = pick([6, 7, 8, 9, 3, 4, 5, 10]);
           const place = pick(["The school hall has", "The bus has", "The cinema has", "The classroom has"]);
           return {
             question: `${place} ${rows} rows of chairs with ${perRow} chairs in each row. How many chairs are there in total?`,
@@ -289,6 +294,233 @@
           return {
             question: `You have ${friends * each + extra} ${item}s. You share them evenly between ${friends} friends, giving each as many as possible. How many ${item}s are left over?`,
             answer: String(extra),
+          };
+        },
+
+        // ---- Addition & subtraction stories ----
+        () => {
+          const scenes = [
+            { verb: "hopped", base: "hop", unit: "m", subject: "A kangaroo" },
+            { verb: "flew", base: "fly", unit: "m", subject: "A cockatoo" },
+            { verb: "swam", base: "swim", unit: "m", subject: "A platypus" },
+            { verb: "ran", base: "run", unit: "m", subject: "A dingo" },
+          ];
+          const s = pick(scenes);
+          const a = randInt(120, 480), b = randInt(120, 480);
+          return {
+            question: `${s.subject} ${s.verb} ${a}${s.unit}, then another ${b}${s.unit}. How far did it ${s.base} in total, in ${s.unit}?`,
+            answer: String(a + b),
+          };
+        },
+        () => {
+          const scenes = [
+            { start: "A school canteen started with", item: "icy poles", verb: "sold" },
+            { start: "A market stall started with", item: "showbags", verb: "sold" },
+            { start: "A car park had", item: "spaces free", verb: "filled" },
+            { start: "A cockatoo counted", item: "seeds in the tree", verb: "ate" },
+          ];
+          const s = pick(scenes);
+          const total = randInt(400, 900);
+          const used = randInt(120, total - 100);
+          return {
+            question: `${s.start} ${total} ${s.item}. It ${s.verb} ${used}. How many are left?`,
+            answer: String(total - used),
+          };
+        },
+
+        // ---- Money ----
+        () => {
+          const priceOptionsCents = [150, 225, 275, 350, 425, 475, 550, 625, 650];
+          const startDollars = pick([15, 20, 25, 30]);
+          const numItems = pick([1, 2]);
+          const purchased = [];
+          for (let i = 0; i < numItems; i++) purchased.push(pick(priceOptionsCents));
+          const spentCents = purchased.reduce((sum, c) => sum + c, 0);
+          const changeCents = startDollars * 100 - spentCents; // always positive: max spend $13 < min start $15
+          const fmtPrice = (cents) => (cents % 100 === 0 ? String(cents / 100) : (cents / 100).toFixed(2));
+          const place = pick(["the Canberra Zoo gift shop", "the school fete", "the museum shop", "the show bag stall"]);
+          const itemsText = purchased.length === 2
+            ? `a $${fmtPrice(purchased[0])} item and a $${fmtPrice(purchased[1])} item`
+            : `a $${fmtPrice(purchased[0])} item`;
+          return {
+            question: `You have $${startDollars} and buy ${itemsText} at ${place}. How much change do you get, in dollars?`,
+            answer: fmtPrice(changeCents),
+          };
+        },
+        () => {
+          const perWeek = pick([2, 3, 4, 5, 6, 8, 10]);
+          const weeks = randInt(4, 12);
+          const total = perWeek * weeks;
+          const goal = pick(["a new bike helmet", "a video game", "a skateboard", "footy boots", "a Lego set"]);
+          return {
+            question: `You save $${perWeek} a week to buy ${goal}. How many weeks will it take to save $${total}?`,
+            answer: String(weeks),
+          };
+        },
+
+        // ---- Time (elapsed) — reuses the same 12-hour checker as
+        // convert24Hour (timeCheck/answerMinutes), so "5:05pm" / "5:05 pm"
+        // are both accepted. ----
+        () => {
+          const h12 = randInt(1, 12);
+          const m = pick([0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50, 55]);
+          const period = pick(["am", "pm"]);
+          let h24 = h12 % 12;
+          if (period === "pm") h24 += 12;
+          const startMinutes = h24 * 60 + m;
+          const durHours = randInt(1, 3);
+          const durMins = pick([0, 15, 20, 30, 45]);
+          const duration = durHours * 60 + durMins;
+          const finishMinutes = (startMinutes + duration) % 1440;
+          const fH24 = Math.floor(finishMinutes / 60), fM = finishMinutes % 60;
+          let fH12 = fH24 % 12; if (fH12 === 0) fH12 = 12;
+          const fPeriod = fH24 < 12 ? "am" : "pm";
+          const durationText = durMins === 0
+            ? `${durHours} hour${durHours === 1 ? "" : "s"}`
+            : `${durHours} hour${durHours === 1 ? "" : "s"} ${durMins} minutes`;
+          const activity = pick(["A movie", "The school assembly", "Basketball training", "The school play"]);
+          return {
+            question: `${activity} starts at ${h12}:${String(m).padStart(2, "0")}${period} and runs for ${durationText}. What time does it finish?`,
+            answer: `${fH12}:${String(fM).padStart(2, "0")} ${fPeriod}`,
+            answerMinutes: finishMinutes,
+            timeCheck: "12h",
+          };
+        },
+        () => {
+          const h12 = randInt(1, 11);
+          const period = pick(["am", "pm"]);
+          const startM = pick([0, 5, 10, 15, 20, 25, 30, 35, 40]);
+          const elapsed = pick([10, 15, 20, 25, 30, 35, 40, 45]);
+          let endM = startM + elapsed, endH = h12;
+          if (endM >= 60) { endM -= 60; endH += 1; }
+          return {
+            question: `How many minutes are there between ${h12}:${String(startM).padStart(2, "0")}${period} and ${endH}:${String(endM).padStart(2, "0")}${period}?`,
+            answer: String(elapsed),
+          };
+        },
+
+        // ---- Patterns & Algebra ----
+        () => {
+          const start = randInt(2, 10);
+          const diff = randInt(2, 5);
+          const targetLevel = randInt(4, 8);
+          const value = start + diff * (targetLevel - 1);
+          const l1 = start, l2 = start + diff, l3 = start + diff * 2;
+          return {
+            question: `A parking garage adds ${diff} more cars every level: Level 1 has ${l1}, Level 2 has ${l2}, Level 3 has ${l3}... How many cars on Level ${targetLevel}?`,
+            answer: String(value),
+          };
+        },
+        () => {
+          // A "between X and Y, digits add to Z" riddle. Fixing the tens
+          // digit via the range pins the ones digit exactly (sum − tens),
+          // so there's always exactly one possible answer.
+          const tens = randInt(1, 8);
+          const ones = randInt(0, 9);
+          const sum = tens + ones;
+          return {
+            question: `I am a number between ${tens * 10} and ${tens * 10 + 9}. My digits add up to ${sum}. What number am I?`,
+            answer: String(tens * 10 + ones),
+          };
+        },
+
+        // ---- Measurement ----
+        () => {
+          const baseTenths = randInt(20, 60);   // 2.0m – 6.0m
+          const extraTenths = randInt(5, 20);   // 0.5m – 2.0m
+          const totalTenths = baseTenths + extraTenths;
+          const fmt = (t) => (t % 10 === 0 ? String(t / 10) : (t / 10).toFixed(1));
+          const animal = pick(["koala", "possum", "kookaburra"]);
+          return {
+            question: `A ${animal}'s tree is ${fmt(extraTenths)}m taller than a ${fmt(baseTenths)}m gum tree. How tall is the ${animal}'s tree, in metres?`,
+            answer: fmt(totalTenths),
+          };
+        },
+        () => {
+          const length = randInt(40, 120);
+          const times = randInt(1, 4);
+          const total = length * 2 * times;
+          return {
+            question: `A school oval is ${length}m long. If you run there and back ${times} time${times === 1 ? "" : "s"}, how far do you travel in total, in metres?`,
+            answer: String(total),
+          };
+        },
+
+        // ---- Geometry ----
+        () => {
+          const shapes = [
+            ["triangle", 3], ["square", 4], ["pentagon", 5], ["hexagon", 6],
+            ["heptagon", 7], ["octagon", 8], ["nonagon", 9], ["decagon", 10],
+          ];
+          const [shape, sides] = pick(shapes);
+          return {
+            question: `How many sides does a${/^[aeiou]/i.test(shape) ? "n" : ""} ${shape} have?`,
+            answer: String(sides),
+          };
+        },
+
+        // ---- Data ----
+        () => {
+          const categorySets = [
+            ["pizza", "sushi", "pasta"],
+            ["cricket", "netball", "soccer"],
+            ["dogs", "cats", "birds"],
+            ["red", "blue", "green"],
+          ];
+          const [catA, catB, catC] = pick(categorySets);
+          const a = randInt(4, 15), b = randInt(4, 15), c = randInt(4, 15);
+          return {
+            question: `In a class vote: ${a} kids chose ${catA}, ${b} chose ${catB} and ${c} chose ${catC}. How many kids voted in total?`,
+            answer: String(a + b + c),
+          };
+        },
+
+        // ---- Fractions ----
+        () => {
+          const denomPool = [2, 3, 4, 5, 6, 8, 10];
+          const d1 = pick(denomPool);
+          let d2;
+          do { d2 = pick(denomPool); } while (d2 === d1);
+          const foodItem = pick(["pizza", "cake", "lamington tray", "block of chocolate"]);
+          return {
+            question: `Which is bigger: 1/${d1} of a ${foodItem} or 1/${d2} of the same ${foodItem}?`,
+            answer: `1/${Math.min(d1, d2)}`,
+          };
+        },
+        () => {
+          function gcd(a, b) { return b === 0 ? a : gcd(b, a % b); }
+          const simpleDenom = pick([2, 3, 4, 5]);
+          let simpleNumer;
+          do { simpleNumer = randInt(1, simpleDenom - 1); } while (gcd(simpleNumer, simpleDenom) !== 1);
+          const factor = randInt(2, 4);
+          return {
+            question: `Write ${simpleNumer * factor}/${simpleDenom * factor} as a simpler fraction.`,
+            answer: `${simpleNumer}/${simpleDenom}`,
+          };
+        },
+
+        // ---- Number & place value (bigger numbers, AC9M4N01/N06) ----
+        () => {
+          const n = randInt(1000, 9949);
+          const rounded = Math.round(n / 100) * 100;
+          return { question: `Round ${formatThousands(n)} to the nearest hundred.`, answer: formatThousands(rounded) };
+        },
+        () => {
+          const n = randInt(1000, 8999);
+          return { question: `Write the number that is 1,000 more than ${formatThousands(n)}.`, answer: formatThousands(n + 1000) };
+        },
+        () => {
+          const base = pick([100, 250, 500]);
+          const n = base * randInt(Math.ceil(1000 / base), Math.floor(9800 / base));
+          return { question: `What is double ${formatThousands(n)}?`, answer: formatThousands(n * 2) };
+        },
+        () => {
+          const nums = new Set();
+          while (nums.size < 4) nums.add(randInt(1000, 9999));
+          const list = [...nums];
+          return {
+            question: `Which of these numbers is the largest: ${list.map(formatThousands).join(", ")}?`,
+            answer: formatThousands(Math.max(...list)),
           };
         },
       ];
@@ -349,18 +581,23 @@
       ]
     },
 
-    // Weighted toward Henry's actual trouble spots from results history
-    // (×6-9, ×11/12, division) — ×2-5/10 are already solid, so the general
-    // "mixed" revision stays in the pool but at a lower share.
+    // 2× and 11× are retired everywhere below — both already solid, and
+    // `avoid` on timesTables keeps them from sneaking back in via the
+    // *other* factor. Most multiplication practice is word problems now
+    // (see y4WordProblem) rather than bare "7 × 8" facts; the bare-fact
+    // topics stay in the mix at a low weight for quick recall drills.
     "Year 4": {
-      "× facts (6s, 7s, 8s, 9s)":   { generator: "timesTables", args: { tables: [6, 7, 8, 9] }, weight: 3 },
-      "Mixed × tables (to 10×10)":  { generator: "timesTables", args: { tables: [2, 3, 4, 5, 6, 7, 8, 9, 10] } },
+      "× facts (6s, 7s, 8s, 9s)":   { generator: "timesTables", args: { tables: [6, 7, 8, 9], avoid: [2, 11] } },
+      "Mixed × tables (to 10×10)":  { generator: "timesTables", args: { tables: [3, 4, 5, 6, 7, 8, 9, 10], avoid: [2, 11] } },
       "Division facts":             { generator: "divisionFacts", args: { tables: [2, 3, 4, 5, 6, 7, 8, 9, 10] }, weight: 2 },
-      "× 11s and 12s (stretch)":    { generator: "timesTables", args: { tables: [11, 12], maxMultiplier: 12 }, weight: 2 },
+      "× 12s (stretch)":            { generator: "timesTables", args: { tables: [12], maxMultiplier: 12, avoid: [2, 11] } },
       // Same × / ÷ facts, wrapped as mini stories — see y4WordProblem.
-      "Word problems":              { generator: "y4WordProblem", weight: 3 },
+      "Word problems":              { generator: "y4WordProblem", weight: 6 },
       "Telling the time (any minute)": { generator: "clockAnyMinute" },
-      "24-hour time":                { generator: "convert24Hour" }
+      "24-hour time":                { generator: "convert24Hour" },
+      // Same generator Y2 uses — the "value of a digit" skill just needs
+      // bigger numbers at Y4, which placeValueTo9999 already produces.
+      "Place value to 9,999":        { generator: "placeValueTo9999" }
     },
 
     "Year 5": {
