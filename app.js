@@ -1123,7 +1123,10 @@
       .replace(/\s+/g, "")
       .replace(/[×x]/g, "*")
       .replace(/[÷]/g, "/")
-      .replace(/−/g, "-");
+      .replace(/−/g, "-")
+      // Thousands commas are just formatting ("7,000") — a bare "7000" is
+      // just as correct, so strip them before comparing either side.
+      .replace(/,/g, "");
   }
 
   // Minutes-since-12 (0–719) so equivalent clock readings compare equal.

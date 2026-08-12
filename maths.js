@@ -236,7 +236,7 @@
           const c = pick(containers);
           const item = pick(items);
           const perContainer = pick([6, 7, 8, 9, 6, 7, 8, 9, 3, 4, 5, 12]);
-          const numContainers = randInt(2, 9);
+          const numContainers = randInt(3, 9); // 2 boxes would just be a ×2 fact
           return {
             question: `There are ${numContainers} ${c.plural} of ${item}s with ${perContainer} in each ${c.singular}. How many ${item}s are there altogether?`,
             answer: String(perContainer * numContainers),
@@ -245,9 +245,9 @@
         // Fraction of a group — a division fact wearing a party hat, same
         // shape as "A lamington tray has 12 lamingtons, you eat 1/4 — how many?"
         () => {
-          const denom = pick([2, 3, 4, 5, 10]);
+          const denom = pick([3, 4, 5, 6, 7, 8, 9]);
           const numer = Math.random() < 0.6 ? 1 : randInt(1, denom - 1);
-          const n = denom * randInt(1, 6);
+          const n = denom * randInt(1, 9);
           const item = pick(items);
           const portion = (n / denom) * numer;
           const fracWord = numer === 1 ? `1/${denom}` : `${numer}/${denom}`;
@@ -257,8 +257,11 @@
         },
         // Equal sharing (division)
         () => {
-          const friends = randInt(2, 10);
-          const each = randInt(2, 10);
+          // friends is the divisor here — keep it off 2 and 10, same as the
+          // bare division-facts topic retires ÷2 and ÷10.
+          let friends;
+          do { friends = randInt(2, 9); } while (friends === 2 || friends === 10);
+          const each = randInt(2, 9);
           const item = pick(items);
           return {
             question: `${friends} friends share ${friends * each} ${item}s equally. How many ${item}s does each friend get?`,
@@ -267,8 +270,9 @@
         },
         // Arrays (multiplication, a different picture in your head)
         () => {
-          const rows = randInt(2, 10);
-          const perRow = pick([6, 7, 8, 9, 3, 4, 5, 10]);
+          let rows;
+          do { rows = randInt(2, 10); } while (rows === 2 || rows === 10);
+          const perRow = pick([6, 7, 8, 9, 3, 4, 5]);
           const place = pick(["The school hall has", "The bus has", "The cinema has", "The classroom has"]);
           return {
             question: `${place} ${rows} rows of chairs with ${perRow} chairs in each row. How many chairs are there in total?`,
@@ -277,8 +281,10 @@
         },
         // Money (whole dollars only — no decimals or $ signs to type back)
         () => {
-          const price = randInt(2, 9);
-          const qty = randInt(2, 10);
+          let price;
+          do { price = randInt(2, 9); } while (price === 2);
+          let qty;
+          do { qty = randInt(2, 10); } while (qty === 2 || qty === 10);
           const item = pick(items);
           return {
             question: `${cap(item)}s cost $${price} each. How many dollars would ${qty} of them cost altogether?`,
@@ -287,7 +293,8 @@
         },
         // Two-step: share evenly, then say what's left over
         () => {
-          const friends = randInt(2, 9);
+          let friends;
+          do { friends = randInt(2, 9); } while (friends === 2);
           const each = randInt(2, 9);
           const extra = randInt(0, each - 1);
           const item = pick(items);
@@ -581,16 +588,16 @@
       ]
     },
 
-    // 2× and 11× are retired everywhere below — both already solid, and
+    // 2×, 10× and 11× are retired everywhere below — all already solid, and
     // `avoid` on timesTables keeps them from sneaking back in via the
     // *other* factor. Most multiplication practice is word problems now
     // (see y4WordProblem) rather than bare "7 × 8" facts; the bare-fact
     // topics stay in the mix at a low weight for quick recall drills.
     "Year 4": {
-      "× facts (6s, 7s, 8s, 9s)":   { generator: "timesTables", args: { tables: [6, 7, 8, 9], avoid: [2, 11] } },
-      "Mixed × tables (to 10×10)":  { generator: "timesTables", args: { tables: [3, 4, 5, 6, 7, 8, 9, 10], avoid: [2, 11] } },
-      "Division facts":             { generator: "divisionFacts", args: { tables: [2, 3, 4, 5, 6, 7, 8, 9, 10] }, weight: 2 },
-      "× 12s (stretch)":            { generator: "timesTables", args: { tables: [12], maxMultiplier: 12, avoid: [2, 11] } },
+      "× facts (6s, 7s, 8s, 9s)":   { generator: "timesTables", args: { tables: [6, 7, 8, 9], avoid: [2, 10, 11] } },
+      "Mixed × tables (to 9×9)":    { generator: "timesTables", args: { tables: [3, 4, 5, 6, 7, 8, 9], avoid: [2, 10, 11] } },
+      "Division facts":             { generator: "divisionFacts", args: { tables: [3, 4, 5, 6, 7, 8, 9] }, weight: 2 },
+      "× 12s (stretch)":            { generator: "timesTables", args: { tables: [12], maxMultiplier: 12, avoid: [2, 10, 11] } },
       // Same × / ÷ facts, wrapped as mini stories — see y4WordProblem.
       "Word problems":              { generator: "y4WordProblem", weight: 6 },
       "Telling the time (any minute)": { generator: "clockAnyMinute" },
