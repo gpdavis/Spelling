@@ -35,7 +35,11 @@
       "Bash(sed -i 's/for \\(let i = 0; i < 10; i++\\)/for \\(let i = 0; i < 40; i++\\)/' /tmp/verify_time_ui.js)",
       "Bash(timeout 90 node /tmp/verify_time_ui.js)",
       "Bash(rm -f /tmp/verify_time*.js /tmp/verify_clock_ui.js /tmp/httpserver_time.log)",
-      "Bash(taskkill //F //PID 25604)"
+      "Bash(taskkill //F //PID 25604)",
+      "Bash(node -e \"new Function\\(require\\('fs'\\).readFileSync\\('app.js','utf8'\\)\\); console.log\\('OK syntax'\\)\")",
+      "Bash(timeout 30 node /tmp/verify_minute_marks2.js)",
+      "Bash(rm -f /tmp/verify_minute_marks*.js /tmp/httpserver_clock.log \"C:\\\\Users\\\\GEOFFD~1\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--git-Spelling\\\\240ee9ea-d3d2-4dad-9c68-9505560c9e00\\\\scratchpad\\\\clock.svg\")",
+      "Bash(taskkill //F //PID 8840)"
     ],
     "additionalDirectories": [
       "\\tmp"

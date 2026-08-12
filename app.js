@@ -950,6 +950,24 @@
       "stroke-width": "3",
     }));
 
+    // Minute ticks — 60 short marks around the rim, one per minute, so a
+    // clockAnyMinute question can actually be read precisely rather than
+    // guessed between the hour marks. Skipped every 5th position since the
+    // hour tick below already marks it.
+    for (let i = 0; i < 60; i++) {
+      if (i % 5 === 0) continue;
+      const ang = (i * 6) * Math.PI / 180;
+      const sin = Math.sin(ang), cos = Math.cos(ang);
+      const inner = r - 5;
+      svg.appendChild(svgEl("line", {
+        x1: cx + r * sin, y1: cy - r * cos,
+        x2: cx + inner * sin, y2: cy - inner * cos,
+        stroke: "currentColor",
+        "stroke-width": "1.3",
+        opacity: "0.7",
+      }));
+    }
+
     // Hour ticks + numbers 1–12
     for (let i = 1; i <= 12; i++) {
       const ang = (i * 30) * Math.PI / 180;

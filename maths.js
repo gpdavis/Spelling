@@ -230,8 +230,8 @@
           ];
           const c = pick(containers);
           const item = pick(items);
-          const perContainer = pick([6, 7, 8, 9, 6, 7, 8, 9, 2, 3, 4, 5, 10, 11, 12]);
-          const numContainers = randInt(2, 10);
+          const perContainer = pick([6, 7, 8, 9, 6, 7, 8, 9, 2, 3, 4, 5, 12]);
+          const numContainers = randInt(2, 9);
           return {
             question: `There are ${numContainers} ${c.plural} of ${item}s with ${perContainer} in each ${c.singular}. How many ${item}s are there altogether?`,
             answer: String(perContainer * numContainers),
