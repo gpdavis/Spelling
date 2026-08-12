@@ -225,9 +225,7 @@ window.WORD_LISTS = {
       { word: "they",      sentence: "They went to the park." },
       { word: "when",      sentence: "When can we go outside?", weight: 3 },
       { word: "how",       sentence: "How do you tie your shoes?", weight: 2 },
-      { word: "here",      sentence: "Come over here, please.",             homophone: true, weight: 2 },
       { word: "there",     sentence: "Put it over there.",                  homophone: true },
-      { word: "were",      sentence: "They were playing outside." },
       { word: "two",       sentence: "I have two hands.",                   homophone: true },
       { word: "each",      sentence: "Each child got a turn.", weight: 3 },
       { word: "after",     sentence: "We play after school." },
@@ -235,22 +233,18 @@ window.WORD_LISTS = {
       { word: "use",       sentence: "Use your pencil to write.",           emoji: "✏️", weight: 2 },
       { word: "our",       sentence: "This is our classroom.", weight: 3 },
       { word: "too",       sentence: "I love cooking too.",                 homophone: true, weight: 2 },
-      { word: "keep",      sentence: "Keep your room tidy.", weight: 2 },
       { word: "put",       sentence: "Put your bag away.",                  emoji: "🎒", weight: 2 },
       { word: "now",       sentence: "We need to go now." },
       { word: "does",      sentence: "Does your dog do tricks?", weight: 2 },
-      { word: "about",     sentence: "Tell me about your day.", weight: 3 },
       { word: "done",      sentence: "I am done with my work.", weight: 2 },
       { word: "house",     sentence: "We live in a big house.",             emoji: "🏠", weight: 2 },
       { word: "know",      sentence: "I know the answer.",                  homophone: true, weight: 3 },
-      { word: "walk",      sentence: "Let's walk to school.",               emoji: "🚶", weight: 3 },
       { word: "want",      sentence: "I want a glass of water." },
       { word: "full",      sentence: "My cup is full." },
       { word: "friend",    sentence: "She is my best friend.",              emoji: "👫" },
       { word: "family",    sentence: "My family loves camping.",            emoji: "👨‍👩‍👧‍👦" },
       { word: "many",      sentence: "There are many stars in the sky.",    emoji: "⭐" },
       { word: "better",    sentence: "I feel much better today.", weight: 3 },
-      { word: "could",     sentence: "Could you help me, please?" },
       { word: "brother",   sentence: "My brother is older than me." },
       { word: "four",      sentence: "A dog has four legs.",                homophone: true, weight: 2 },
       { word: "who",       sentence: "Who is at the door?", weight: 2 },
@@ -274,7 +268,6 @@ window.WORD_LISTS = {
       { word: "round",     sentence: "The ball is round.",                 emoji: "⚽" },
       { word: "before",    sentence: "Wash your hands before dinner." },
       { word: "should",    sentence: "You should eat your vegetables." },
-      { word: "own",       sentence: "I have my own room.", weight: 2 },
       { word: "under",     sentence: "The cat hid under the bed.",         emoji: "🐱" },
       { word: "which",     sentence: "Which book do you want?", weight: 2 },
       { word: "eight",     sentence: "I am eight years old.",              homophone: true },
@@ -384,13 +377,11 @@ window.WORD_LISTS = {
       { word: "branches", sentence: "Birds rested on the branches.", emoji: "🌳", weight: 2 }
     ],
     "Australian spellings": [
-      { word: "centre",    sentence: "Meet me at the shopping centre.", weight: 3 },
       { word: "metre",     sentence: "The rope is one metre long.", weight: 2 },
       { word: "litre",     sentence: "Pour a litre of milk into the jug.", weight: 2 },
       { word: "fibre",     sentence: "Vegetables have lots of fibre.", emoji: "🥦", weight: 2 },
       { word: "theatre",   sentence: "We saw a play at the theatre.", emoji: "🎭", weight: 3 },
       { word: "colour",    sentence: "Pick your favourite colour.", emoji: "🎨", weight: 2 },
-      { word: "favour",    sentence: "Could you do me a favour?", weight: 3 },
       { word: "flavour",   sentence: "Strawberry is my favourite flavour.", emoji: "🍓", weight: 2 },
       { word: "harbour",   sentence: "Boats rest in the harbour.", emoji: "⛵", weight: 2 },
       { word: "neighbour", sentence: "My neighbour has a cat.",   emoji: "🏘️", weight: 2 },
@@ -440,7 +431,6 @@ window.WORD_LISTS = {
       { word: "able",     sentence: "I am able to ride my bike." },
       { word: "being",    sentence: "Thank you for being so kind." },
       { word: "children", sentence: "The children played in the park.", emoji: "🧒" },
-      { word: "enough",   sentence: "Do we have enough milk?" },
       { word: "five",     sentence: "I have five fingers on one hand.", emoji: "✋" },
       { word: "instead",  sentence: "Let's walk instead of driving." },
       { word: "need",     sentence: "I need a drink of water." },
@@ -490,6 +480,18 @@ window.WORD_LISTS = {
       { word: "together", sentence: "We built the model together." },
       { word: "while",    sentence: "Read a book while you wait." },
       { word: "number",   sentence: "Pick a number between one and ten.", emoji: "🔢" }
+    ],
+    // A silly, seriously-hard bonus word — app.js guarantees exactly one of
+    // these lands in the pool every week (a different one each week), on top
+    // of the regular categories above. Great for a laugh and bragging rights,
+    // not meant to be mastered.
+    "Challenge word of the week": [
+      { word: "supercalifragilisticexpialidocious", sentence: "She said supercalifragilisticexpialidocious just for fun." },
+      { word: "antidisestablishmentarianism",        sentence: "Antidisestablishmentarianism is famous for being one of the longest words in English." },
+      { word: "floccinaucinihilipilification",       sentence: "Floccinaucinihilipilification means treating something as worthless." },
+      { word: "pneumonoultramicroscopicsilicovolcanoconiosis", sentence: "Pneumonoultramicroscopicsilicovolcanoconiosis is a lung disease and one of the longest words ever." },
+      { word: "incomprehensibilities",               sentence: "The instructions were full of incomprehensibilities." },
+      { word: "uncharacteristically",                sentence: "He was uncharacteristically quiet today." }
     ]
   },
 

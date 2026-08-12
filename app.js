@@ -705,17 +705,26 @@
     startSession(words, level, subject, subList);
   }
 
+  // A level can carry one of these — a bonus sub-list of silly, seriously-hard
+  // words. One is guaranteed into the weekly pool below (never weighted into
+  // the regular draw), so there's always at least one in rotation each week.
+  const CHALLENGE_LIST_KEY = "Challenge word of the week";
+
   function buildSpellingSession(level) {
     const subs = lists[level] || {};
+    const challengeWords = subs[CHALLENGE_LIST_KEY] || [];
     const all = [];
     // Words can carry an optional `weight` (default 1) — entered into the pool
     // that many times so persistently-missed words come up more often, at the
     // expense of words the kid already has solid.
-    Object.values(subs).forEach((arr) => arr.forEach((w) => {
-      const copies = Math.max(1, Math.round(w.weight || 1));
-      for (let i = 0; i < copies; i++) all.push(w);
-    }));
-    if (!all.length) return [];
+    Object.entries(subs).forEach(([key, arr]) => {
+      if (key === CHALLENGE_LIST_KEY) return;
+      arr.forEach((w) => {
+        const copies = Math.max(1, Math.round(w.weight || 1));
+        for (let i = 0; i < copies; i++) all.push(w);
+      });
+    });
+    if (!all.length && !challengeWords.length) return [];
 
     const now = new Date();
     // The week (Mon–Sun) has a single stable 20-word pool, so a kid practises
@@ -724,8 +733,19 @@
     // `all` contains repeated entries for weighted words (see above), so pick
     // unique words as we walk the shuffle rather than slicing it directly —
     // otherwise a heavily-weighted word could land twice in the same pool.
+    // When there's a challenge list, one slot is reserved for it below so the
+    // pool still ends up at the usual size.
     const weekRng = mulberry32(hashSeed(`${level}|week|${mondayKey(now)}`));
-    const weekPool = pickUniqueWords(seededShuffle(all, weekRng), WEEKLY_POOL_SIZE);
+    const regularPoolSize = challengeWords.length ? WEEKLY_POOL_SIZE - 1 : WEEKLY_POOL_SIZE;
+    let weekPool = pickUniqueWords(seededShuffle(all, weekRng), regularPoolSize);
+
+    if (challengeWords.length) {
+      // A different challenge word each week (own seed, so it doesn't track
+      // whichever regular word the week's shuffle happens to put first).
+      const challengeRng = mulberry32(hashSeed(`${level}|challenge|${mondayKey(now)}`));
+      const challengeWord = challengeWords[Math.floor(challengeRng() * challengeWords.length)];
+      weekPool = weekPool.concat(challengeWord);
+    }
 
     // Each day draws a stable 10 from that pool — same 10 all day (so retries
     // and repeat sessions reinforce the same words), a fresh draw each morning.
