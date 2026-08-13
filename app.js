@@ -50,9 +50,9 @@
   const WEEKLY_POOL_SIZE = 25;
   // Both spelling and maths need this final score or better to earn the day's tick.
   const PASS_PCT = 0.8;
-  // Doing both subjects earns a point; doing them again the same day earns a
-  // second, but a day can't earn more than this many.
-  const POINTS_PER_DAY_CAP = 2;
+  // Doing both subjects earns a point; doing them again the same day earns
+  // another, but a day can't earn more than this many.
+  const POINTS_PER_DAY_CAP = 3;
 
   const lists       = window.WORD_LISTS || {};
   const mathsLists  = window.MATHS_LISTS || {};
