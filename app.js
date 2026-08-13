@@ -707,7 +707,8 @@
 
   // A level can carry one of these — a bonus sub-list of silly, seriously-hard
   // words. One is guaranteed into the weekly pool below (never weighted into
-  // the regular draw), so there's always at least one in rotation each week.
+  // the regular draw), and then guaranteed into every day's session too (see
+  // below) — so a kid sees it in rotation every single day of the week.
   const CHALLENGE_LIST_KEY = "Challenge word of the week";
 
   function buildSpellingSession(level) {
@@ -737,20 +738,25 @@
     // pool still ends up at the usual size.
     const weekRng = mulberry32(hashSeed(`${level}|week|${mondayKey(now)}`));
     const regularPoolSize = challengeWords.length ? WEEKLY_POOL_SIZE - 1 : WEEKLY_POOL_SIZE;
-    let weekPool = pickUniqueWords(seededShuffle(all, weekRng), regularPoolSize);
+    const weekPool = pickUniqueWords(seededShuffle(all, weekRng), regularPoolSize);
 
+    let challengeWord = null;
     if (challengeWords.length) {
       // A different challenge word each week (own seed, so it doesn't track
       // whichever regular word the week's shuffle happens to put first).
       const challengeRng = mulberry32(hashSeed(`${level}|challenge|${mondayKey(now)}`));
-      const challengeWord = challengeWords[Math.floor(challengeRng() * challengeWords.length)];
-      weekPool = weekPool.concat(challengeWord);
+      challengeWord = challengeWords[Math.floor(challengeRng() * challengeWords.length)];
     }
 
-    // Each day draws a stable 10 from that pool — same 10 all day (so retries
-    // and repeat sessions reinforce the same words), a fresh draw each morning.
+    // Each day draws a stable 10 from the regular pool — same 10 all day (so
+    // retries and repeat sessions reinforce the same words), a fresh draw
+    // each morning. The week's challenge word (if any) isn't left to chance
+    // here — it's appended to every day's session so it comes up daily,
+    // not just on whichever days the daily draw happens to land on it.
     const dayRng = mulberry32(hashSeed(`${level}|day|${dateKey(now)}`));
-    return pickUniqueWords(seededShuffle(weekPool, dayRng), WORDS_PER_SESSION);
+    const dailyCount = challengeWord ? WORDS_PER_SESSION - 1 : WORDS_PER_SESSION;
+    const daySession = pickUniqueWords(seededShuffle(weekPool, dayRng), dailyCount);
+    return challengeWord ? daySession.concat(challengeWord) : daySession;
   }
 
   // Walks a shuffled (possibly weight-duplicated) word list and returns up to
