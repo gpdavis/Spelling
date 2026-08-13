@@ -145,6 +145,17 @@
             answer: String(step * groups),
           };
         },
+        // Equal sharing (division) — small numbers, always shares out evenly
+        // with nothing left over. AC9M2A02.
+        () => {
+          const friends = randInt(2, 5);
+          const each = randInt(2, 6);
+          const item = pick(items);
+          return {
+            question: `You have ${friends * each} ${item}s. You share them equally between ${friends} friends. How many ${item}s does each friend get?`,
+            answer: String(each),
+          };
+        },
       ];
 
       return { ...pick(templates)(), context: "Word problem" };
