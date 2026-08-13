@@ -93,6 +93,62 @@
       do { b = randInt(2, maxB); } while (b === 10);
       return { question: `${a} − ${b} = ?`, answer: String(a - b), aid: "numberline", context: "Subtraction" };
     },
+
+    // ---- Year 2: the same +/- and skip-counting skills, dressed as mini
+    // stories (same idea as y4WordProblem, below). Number ranges are copied
+    // straight from y2AddNumberLine/y2SubNumberLine above, so the difficulty
+    // doesn't change — only the presentation does, and the number-line aid
+    // still shows since it's the same kind of sum underneath.
+    y2WordProblem() {
+      const items = ["sticker", "marble", "jelly bean", "toy car", "balloon", "seashell", "block", "crayon"];
+
+      const templates = [
+        // Addition story — same numbers as y2AddNumberLine.
+        () => {
+          const a = randInt(1, 12);
+          const maxB = 20 - a;
+          let b;
+          do { b = randInt(2, maxB); } while (b === 10);
+          const item = pick(items);
+          const scenes = [
+            `You have ${a} ${item}s. A friend gives you ${b} more. How many ${item}s do you have now?`,
+            `There are ${a} ${item}s in a jar. Someone puts ${b} more in. How many ${item}s are in the jar now?`,
+          ];
+          return { question: pick(scenes), answer: String(a + b), aid: "numberline" };
+        },
+        // Subtraction story — same numbers as y2SubNumberLine.
+        () => {
+          const a = randInt(5, 20);
+          const maxB = a - 1;
+          let b;
+          do { b = randInt(2, maxB); } while (b === 10);
+          const item = pick(items);
+          const scenes = [
+            `You have ${a} ${item}s. You give ${b} away. How many ${item}s are left?`,
+            `There are ${a} ${item}s on the table. ${b} get put away. How many ${item}s are left on the table?`,
+          ];
+          return { question: pick(scenes), answer: String(a - b), aid: "numberline" };
+        },
+        // Equal groups via skip counting (2s, 5s, 10s) — AC9M2A02.
+        () => {
+          const step = pick([2, 5, 10]);
+          const groups = randInt(2, 6);
+          const item = pick(items);
+          const containers = [
+            { singular: "bag", plural: "bags" },
+            { singular: "box", plural: "boxes" },
+            { singular: "jar", plural: "jars" },
+          ];
+          const c = pick(containers);
+          return {
+            question: `There are ${groups} ${c.plural} of ${item}s with ${step} in each ${c.singular}. Count by ${step}s to find how many ${item}s there are altogether.`,
+            answer: String(step * groups),
+          };
+        },
+      ];
+
+      return { ...pick(templates)(), context: "Word problem" };
+    },
     // friendsToTen() {
     //   const a = randInt(1, 9);
     //   return Math.random() < 0.5
@@ -563,7 +619,10 @@
       "Simple subtraction (with number line)": { generator: "y2SubNumberLine", weight: 2 },
       //"Friends to 10": { generator: "friendsToTen" },
       "Place value to 9,999": { generator: "placeValueTo9999" },
-      "Telling the time (clock)": { generator: "clockToQuarter" }
+      "Telling the time (clock)": { generator: "clockToQuarter" },
+      // Same +/- and skip-counting skills above, wrapped as mini stories —
+      // see y2WordProblem.
+      "Word problems": { generator: "y2WordProblem", weight: 2 }
     },
 
     "Year 3": {
