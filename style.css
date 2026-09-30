@@ -281,6 +281,27 @@ button.primary:hover { filter: brightness(1.1); }
 
 .word-controls button { flex: 1 1 0; min-width: 12rem; }
 
+.maths-controls {
+  display: flex;
+  margin: 0.75rem 0 1rem;
+}
+
+.scratchpad-panel {
+  margin: 0 0 1rem;
+}
+
+.scratchpad-canvas {
+  display: block;
+  width: 100%;
+  height: 220px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card-2);
+  /* Otherwise touch-drag scrolls the page instead of drawing. */
+  touch-action: none;
+  margin-bottom: 0.5rem;
+}
+
 #answer-form {
   display: flex;
   gap: 0.5rem;

@@ -19,6 +19,11 @@
   const questionImageEl   = $("question-image");
   const questionTextEl    = $("question-text");
   const wordControlsEl    = $("word-controls");
+  const mathsControlsEl   = $("maths-controls");
+  const scratchpadToggleBtn = $("scratchpad-toggle-btn");
+  const scratchpadPanel     = $("scratchpad-panel");
+  const scratchpadCanvas    = $("scratchpad-canvas");
+  const scratchpadClearBtn  = $("scratchpad-clear-btn");
   const sayWordBtn   = $("say-word-btn");
   const saySentBtn   = $("say-sentence-btn");
   const answerForm   = $("answer-form");
@@ -885,6 +890,7 @@
       answerInput.setAttribute("inputmode", "text");
       answerInput.setAttribute("placeholder", "Type the word here");
     }
+    setScratchpadOpen(false);
     setQuizMascot();
     showCurrent();
     answerInput.focus();
@@ -1027,6 +1033,77 @@
     return null;
   }
 
+  // ---- maths scratchpad: a blank canvas for working sums out by hand ----
+  // Stays open across questions within a session (kids shouldn't have to
+  // reopen it every time), but its contents are wiped on every new question
+  // (see showCurrent) so old working doesn't linger and confuse the next sum.
+  let scratchpadOpen = false;
+  let scratchpadCtx = null;
+  let scratchpadDrawing = false;
+  let scratchpadLastPoint = null;
+
+  // (Re)sizes the canvas's backing pixel buffer to match its on-screen CSS
+  // size at the device's pixel ratio, so strokes stay crisp on retina/tablet
+  // screens. Resizing wipes the canvas, so this only runs when the size
+  // actually changed (first open, or a resize/rotation while open).
+  function sizeScratchpadCanvas() {
+    const rect = scratchpadCanvas.getBoundingClientRect();
+    const ratio = window.devicePixelRatio || 1;
+    const w = Math.max(1, Math.round(rect.width * ratio));
+    const h = Math.max(1, Math.round(rect.height * ratio));
+    if (scratchpadCanvas.width === w && scratchpadCanvas.height === h) return;
+    scratchpadCanvas.width = w;
+    scratchpadCanvas.height = h;
+    scratchpadCtx = scratchpadCanvas.getContext("2d");
+    scratchpadCtx.scale(ratio, ratio);
+    scratchpadCtx.lineCap = "round";
+    scratchpadCtx.lineJoin = "round";
+    scratchpadCtx.lineWidth = 3;
+    scratchpadCtx.strokeStyle = "#e5e7eb";
+  }
+
+  function clearScratchpad() {
+    if (!scratchpadCtx) return;
+    const rect = scratchpadCanvas.getBoundingClientRect();
+    scratchpadCtx.clearRect(0, 0, rect.width, rect.height);
+  }
+
+  function setScratchpadOpen(open) {
+    scratchpadOpen = open;
+    scratchpadPanel.classList.toggle("hidden", !open);
+    scratchpadToggleBtn.textContent = open ? "✖ Close scratchpad" : "✏️ Scratchpad";
+    if (open) sizeScratchpadCanvas();
+  }
+
+  scratchpadToggleBtn.addEventListener("click", () => setScratchpadOpen(!scratchpadOpen));
+  scratchpadClearBtn.addEventListener("click", clearScratchpad);
+
+  function scratchpadPointFromEvent(e) {
+    const rect = scratchpadCanvas.getBoundingClientRect();
+    return { x: e.clientX - rect.left, y: e.clientY - rect.top };
+  }
+
+  scratchpadCanvas.addEventListener("pointerdown", (e) => {
+    scratchpadDrawing = true;
+    scratchpadCanvas.setPointerCapture(e.pointerId);
+    scratchpadLastPoint = scratchpadPointFromEvent(e);
+  });
+  scratchpadCanvas.addEventListener("pointermove", (e) => {
+    if (!scratchpadDrawing || !scratchpadCtx) return;
+    const p = scratchpadPointFromEvent(e);
+    scratchpadCtx.beginPath();
+    scratchpadCtx.moveTo(scratchpadLastPoint.x, scratchpadLastPoint.y);
+    scratchpadCtx.lineTo(p.x, p.y);
+    scratchpadCtx.stroke();
+    scratchpadLastPoint = p;
+  });
+  function stopScratchpadDrawing() { scratchpadDrawing = false; scratchpadLastPoint = null; }
+  scratchpadCanvas.addEventListener("pointerup", stopScratchpadDrawing);
+  scratchpadCanvas.addEventListener("pointercancel", stopScratchpadDrawing);
+  scratchpadCanvas.addEventListener("pointerleave", stopScratchpadDrawing);
+
+  window.addEventListener("resize", () => { if (scratchpadOpen) sizeScratchpadCanvas(); });
+
   function showCurrent() {
     const label = session.subject === "maths" ? "Question" : "Word";
     progress.textContent = `${label} ${session.i + 1} of ${session.words.length}`;
@@ -1034,6 +1111,8 @@
     if (session.subject === "maths") {
       wordEmoji.classList.add("hidden");
       wordControlsEl.classList.add("hidden");
+      mathsControlsEl.classList.remove("hidden");
+      clearScratchpad();
       if (cur.context) {
         questionContextEl.textContent = cur.context;
         questionContextEl.classList.remove("hidden");
@@ -1068,6 +1147,8 @@
       questionContextEl.classList.add("hidden");
       questionImageEl.classList.add("hidden");
       questionTextEl.classList.add("hidden");
+      mathsControlsEl.classList.add("hidden");
+      setScratchpadOpen(false);
       wordControlsEl.classList.remove("hidden");
       const emoji = cur.emoji;
       if (emoji) {

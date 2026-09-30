@@ -78,6 +78,13 @@
       <button id="say-word-btn">🔊 Say the word</button>
       <button id="say-sentence-btn">💬 Use it in a sentence</button>
     </div>
+    <div id="maths-controls" class="maths-controls hidden">
+      <button id="scratchpad-toggle-btn" type="button">✏️ Scratchpad</button>
+    </div>
+    <div id="scratchpad-panel" class="scratchpad-panel hidden">
+      <canvas id="scratchpad-canvas" class="scratchpad-canvas" aria-hidden="true"></canvas>
+      <button id="scratchpad-clear-btn" type="button">🧹 Clear</button>
+    </div>
     <form id="answer-form">
       <input id="answer-input" type="text" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" placeholder="Type the word here" />
       <button type="submit" class="primary">Check</button>
