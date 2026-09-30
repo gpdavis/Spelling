@@ -390,11 +390,17 @@
     if (!POINTS_SHEET_CSV_URL) return;
     try {
       const res = await fetch(POINTS_SHEET_CSV_URL, { cache: "no-store" });
-      if (!res.ok) return;
+      if (!res.ok) {
+        console.warn(`[points] Sheet read failed: HTTP ${res.status} ${res.statusText} — falling back to the cached day map (points/Stargaze eligibility may be stale).`);
+        return;
+      }
       sheetDayMap = buildDayMap(parseCSV(await res.text()));
       try { localStorage.setItem(POINTS_CACHE_KEY, JSON.stringify(sheetDayMap)); } catch (e) {}
       if (!setup.classList.contains("hidden")) refreshHomePoints();
-    } catch (e) { /* offline — keep the cached map */ }
+    } catch (e) {
+      // offline — keep the cached map
+      console.warn("[points] Sheet read errored (likely offline) — falling back to the cached day map (points/Stargaze eligibility may be stale):", e);
+    }
   }
 
   // ---- optimistic "done today" overlay (this device) ----
@@ -1757,18 +1763,34 @@
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
   }
 
+  // Logs *why* a fetch failed (bad key, rate limit, offline, ...) to the
+  // console — there's no other way to diagnose a stuck background remotely,
+  // since the on-screen fallback (see apodStatus below) can't say more than
+  // "couldn't load".
   async function fetchApod(dateStr) {
     try {
       const res = await fetch(`${APOD_API}?api_key=${APOD_KEY}&date=${dateStr}`);
-      if (!res.ok) return null;
+      if (!res.ok) {
+        let detail = "";
+        try { detail = JSON.stringify(await res.json()); } catch (e) {}
+        console.warn(`[stargaze] APOD request failed for ${dateStr}: HTTP ${res.status} ${res.statusText}${detail ? " — " + detail : ""}`);
+        return null;
+      }
       return await res.json();
-    } catch (e) { return null; }
+    } catch (e) {
+      console.warn(`[stargaze] APOD request errored for ${dateStr} (likely offline or blocked):`, e);
+      return null;
+    }
   }
 
   // Set once the day's photo (and its title/explanation) is fetched or read
   // from cache. Kept separate from *showing* it — see setStargazeAvailable —
   // so the fetch can happen on boot while the reveal waits for completion.
   let apodInfo = null;
+  // "loading" until the fetch (or cache read) settles, then "ok" or "error" —
+  // drives the on-screen fallback message in refreshSpaceBackground so a
+  // failure isn't just a silent blank starfield.
+  let apodStatus = "loading";
 
   function apodInfoFrom(data) {
     return {
@@ -1789,6 +1811,18 @@
         ? `${apodInfo.explanation} (📷 ${apodInfo.copyright})`
         : apodInfo.explanation;
       spaceCaption.classList.toggle("hidden", !apodInfo.title || !captionVisible);
+    } else if (spaceAvailable && apodStatus === "error") {
+      // Forced visible regardless of the caption hide/show toggle — with no
+      // photo behind it, hiding this would leave an unexplained blank screen.
+      spaceBg.style.backgroundImage = "";
+      spaceCaptionTitle.textContent = "🌌 No space photo today";
+      spaceCaptionText.textContent = "Couldn't load NASA's picture of the day — check the internet connection and try again later. Your points are still saved either way!";
+      spaceCaption.classList.remove("hidden");
+    } else if (spaceAvailable && apodStatus === "loading") {
+      spaceBg.style.backgroundImage = "";
+      spaceCaptionTitle.textContent = "✨ Loading tonight's sky...";
+      spaceCaptionText.textContent = "";
+      spaceCaption.classList.remove("hidden");
     } else {
       spaceBg.style.backgroundImage = "";
       spaceCaption.classList.add("hidden");
@@ -1802,12 +1836,19 @@
     try { cache = JSON.parse(localStorage.getItem(APOD_CACHE_KEY) || "null"); } catch (e) { cache = null; }
     if (cache && cache.date === today) {
       apodInfo = cache.imageUrl ? cache : null;
+      apodStatus = cache.imageUrl ? "ok" : "error";
+      if (apodStatus === "error") console.warn("[stargaze] Using cached failure for today — no photo will show until tomorrow, or clear spelling.apodCache to retry now.");
       refreshSpaceBackground();
       return;
     }
 
     const todayData = await fetchApod(today);
-    if (!todayData) return; // network hiccup / rate limit — don't cache, try again next load
+    if (!todayData) {
+      // network hiccup / rate limit — don't cache, try again next load
+      apodStatus = "error";
+      refreshSpaceBackground();
+      return;
+    }
 
     // Deliberately using `url` (standard resolution, usually well under 1MB)
     // rather than `hdurl`, which can be 5-10+ MB — far too heavy for a page
@@ -1821,10 +1862,12 @@
           info = apodInfoFrom(pastData);
         }
       }
+      if (!info) console.warn(`[stargaze] No image-type APOD found in today's entry or ${APOD_RANDOM_ATTEMPTS} random past dates — today's entry was probably a video.`);
     }
 
     localStorage.setItem(APOD_CACHE_KEY, JSON.stringify(info ? { date: today, ...info } : { date: today, imageUrl: null }));
     apodInfo = info;
+    apodStatus = info ? "ok" : "error";
     refreshSpaceBackground();
   }
 
