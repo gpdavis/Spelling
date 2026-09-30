@@ -76,7 +76,7 @@
       return { question: `${seq.join(", ")}, ?`, answer: String(answer), context };
     },
 
-    // ---- Year 2: simple +/- with a number line and friends-to-10 ----
+    // ---- Year 2: simple +/- and friends-to-10 ----
     // +1/-1 (just count on/back one) and +10/-10 (just bump the tens digit)
     // are trivial, so the second number always skips those two values.
     y2AddNumberLine() {
@@ -84,21 +84,20 @@
       const maxB = 20 - a;
       let b;
       do { b = randInt(2, maxB); } while (b === 10);
-      return { question: `${a} + ${b} = ?`, answer: String(a + b), aid: "numberline", context: "Addition" };
+      return { question: `${a} + ${b} = ?`, answer: String(a + b), context: "Addition" };
     },
     y2SubNumberLine() {
       const a = randInt(5, 20);
       const maxB = a - 1;
       let b;
       do { b = randInt(2, maxB); } while (b === 10);
-      return { question: `${a} − ${b} = ?`, answer: String(a - b), aid: "numberline", context: "Subtraction" };
+      return { question: `${a} − ${b} = ?`, answer: String(a - b), context: "Subtraction" };
     },
 
     // ---- Year 2: the same +/- and skip-counting skills, dressed as mini
     // stories (same idea as y4WordProblem, below). Number ranges are copied
     // straight from y2AddNumberLine/y2SubNumberLine above, so the difficulty
-    // doesn't change — only the presentation does, and the number-line aid
-    // still shows since it's the same kind of sum underneath.
+    // doesn't change — only the presentation does.
     y2WordProblem() {
       const items = ["sticker", "marble", "jelly bean", "toy car", "balloon", "seashell", "block", "crayon"];
 
@@ -114,7 +113,7 @@
             `You have ${a} ${item}s. A friend gives you ${b} more. How many ${item}s do you have now?`,
             `There are ${a} ${item}s in a jar. Someone puts ${b} more in. How many ${item}s are in the jar now?`,
           ];
-          return { question: pick(scenes), answer: String(a + b), aid: "numberline" };
+          return { question: pick(scenes), answer: String(a + b) };
         },
         // Subtraction story — same numbers as y2SubNumberLine.
         () => {
@@ -127,7 +126,7 @@
             `You have ${a} ${item}s. You give ${b} away. How many ${item}s are left?`,
             `There are ${a} ${item}s on the table. ${b} get put away. How many ${item}s are left on the table?`,
           ];
-          return { question: pick(scenes), answer: String(a - b), aid: "numberline" };
+          return { question: pick(scenes), answer: String(a - b) };
         },
         // Equal groups via skip counting (2s, 5s, 10s) — AC9M2A02.
         () => {
